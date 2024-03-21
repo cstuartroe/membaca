@@ -35,3 +35,6 @@ class Trial(models.Model):
             validators.MaxValueValidator(len(EASINESS_DAYS) - 1),
         ]
     )
+
+    def __str__(self):
+        return f"{self.lemma_add} on {self.time_created}"
