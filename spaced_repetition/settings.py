@@ -1,14 +1,14 @@
 import os
-from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    'membaca-b8789e9ca984.herokuapp.com',
 ]
 
-DEBUG = True
+DEBUG = bool(os.getenv('DEBUG'))
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
@@ -17,7 +17,7 @@ STATICFILES_DIRS = (
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-SECRET_KEY = get_random_secret_key()
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "django_google_sso",
     'spaced_repetition.apps.SpacedRepetitionConfig',
 ]
 
@@ -111,3 +112,12 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+
+GOOGLE_SSO_CLIENT_ID = os.getenv("GOOGLE_SSO_CLIENT_ID")
+GOOGLE_SSO_PROJECT_ID = os.getenv("GOOGLE_SSO_PROJECT_ID")
+GOOGLE_SSO_CLIENT_SECRET = os.getenv("GOOGLE_SSO_CLIENT_SECRET")
+
+# SITE_ID = 1
+GOOGLE_SSO_ALLOWABLE_DOMAINS = ['gmail.com']
+
+SECURE_SSL_REDIRECT = not DEBUG
