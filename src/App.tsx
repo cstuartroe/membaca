@@ -5,12 +5,12 @@ import {
 } from "react-router-dom";
 
 import "../static/scss/main.scss";
-import { Language } from "./models";
+import { UserState } from "./types";
 import LanguageChooser from "./LanguageChooser";
+import Home from "./Home";
 
 type AppState = {
-    all_languages?: Language[],
-    language?: Language,
+    user_state?: UserState,
 }
 
 class App extends Component<{}, AppState> {
@@ -19,33 +19,39 @@ class App extends Component<{}, AppState> {
         this.state = {};
     }
 
-    componentDidMount() {
-        fetch("/languages")
+    reloadUserState() {
+        fetch("/api/current_user_state")
             .then(res => res.json())
             .then(data => this.setState({
-                all_languages: data,
+                user_state: data,
             }))
     }
 
-    render() {
-        const languages = this.state.all_languages
+    componentDidMount() {
+        this.reloadUserState();
+    }
 
-        if (languages === undefined) {
-            return <p>Loading languages...</p>
+    render() {
+        if (this.state.user_state === undefined) {
+            return null;
         }
 
         const router = createBrowserRouter([
             {
                 path: "/",
-                element: <LanguageChooser choices={languages} choose={(language: Language) => {
-                    this.setState({language})
-                }}/>,
+                element: <Home user_state={this.state.user_state}/>
+            },
+            {
+                path: "/choose_language",
+                element: <LanguageChooser
+                    user_state={this.state.user_state}
+                    reloadUserState={() => this.reloadUserState()}
+                />,
             },
         ]);
 
         return <div className="container-fluid">
             <div className="row">
-                {this.state.language?.name}
                 <RouterProvider router={router}/>
             </div>
         </div>
