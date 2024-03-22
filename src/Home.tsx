@@ -18,8 +18,9 @@ export default class Home extends Component<Props, State> {
 
 
     render() {
-        if (this.props.user_state.user === undefined) {
-            return <Navigate to="/admin/login/?next=/"/>;
+        if (this.props.user_state.user === null) {
+            window.location.href = "/google_sso/login/?next=/";
+            return null;
         }
 
         else if (this.props.user_state.current_language === null) {

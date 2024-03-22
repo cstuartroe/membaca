@@ -8,6 +8,7 @@ import "../static/scss/main.scss";
 import { UserState } from "./types";
 import LanguageChooser from "./LanguageChooser";
 import Home from "./Home";
+import Dashboard from "./Dashboard";
 
 type AppState = {
     user_state?: UserState,
@@ -36,16 +37,26 @@ class App extends Component<{}, AppState> {
             return null;
         }
 
+        const user_state: UserState = this.state.user_state;
+
         const router = createBrowserRouter([
             {
                 path: "/",
-                element: <Home user_state={this.state.user_state}/>
+                element: <Home user_state={user_state}/>
             },
             {
                 path: "/choose_language",
                 element: <LanguageChooser
-                    user_state={this.state.user_state}
+                    user_state={user_state}
                     reloadUserState={() => this.reloadUserState()}
+                />,
+            },
+            {
+                path: "/dashboard",
+                element: <Dashboard
+                    user_state={user_state}
+                    reloadUserState={() => this.reloadUserState()}
+                    clearLanguage={() => this.setState({user_state: {...user_state, current_language: null}})}
                 />,
             },
         ]);

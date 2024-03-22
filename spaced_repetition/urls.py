@@ -13,7 +13,7 @@ urlpatterns = [
         include("django_google_sso.urls", namespace="django_google_sso")
     ),
     path(
-        "current_user_state",
+        "api/current_user_state",
         CurrentUserStateView.as_view(),
         name="current_user_state",
     ),
