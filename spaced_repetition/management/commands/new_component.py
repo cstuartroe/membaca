@@ -9,25 +9,25 @@ type State = {
 }
 
 export default class %s extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-    };
-  }
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+        };
+    }
 
 
-  render() {
-    return (
-      <>
-      </>
-    );
-  }
+    render() {
+        return (
+            <>
+            </>
+        );
+    }
 }
 """
 
 
 class Command(BaseCommand):
-    help = 'Transpiles Django models into a Typescript type definition file'
+    help = 'Creates a new React component'
 
     def add_arguments(self, parser):
         parser.add_argument('component_names', nargs='+', type=str)
