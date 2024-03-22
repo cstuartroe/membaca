@@ -25,7 +25,7 @@ export default class LanguageChooser extends Component<Props, State> {
 
                 <div className="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
                     {this.props.choices.map((l: Language) => (
-                        <div className="button" onClick={() => this.props.choose(l)}>
+                        <div className="button" onClick={() => this.props.choose(l)} key={l.name}>
                             {l.name}
                         </div>
                     ))}
