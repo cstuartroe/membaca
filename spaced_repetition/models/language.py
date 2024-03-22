@@ -6,3 +6,9 @@ class Language(models.Model):
 
     def __str__(self):
         return self.name
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+        }

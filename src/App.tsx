@@ -1,20 +1,55 @@
 import React, { Component } from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import {
+    createBrowserRouter,
+    RouterProvider,
+} from "react-router-dom";
 
 import "../static/scss/main.scss";
+import { Language } from "./models";
+import LanguageChooser from "./LanguageChooser";
 
-class App extends Component {
-  render() {
-    return (
-        <Router>
-          <Switch>
-            <Route exact={true} path="" render={() => (
-              <p>Hello, World!</p>
-            )}/>
-          </Switch>
-        </Router>
-    );
-  }
+type AppState = {
+    all_languages?: Language[],
+    language?: Language,
+}
+
+class App extends Component<{}, AppState> {
+    constructor(props: {}) {
+        super(props);
+        this.state = {};
+    }
+
+    componentDidMount() {
+        fetch("/languages")
+            .then(res => res.json())
+            .then(data => this.setState({
+                all_languages: data,
+            }))
+    }
+
+    render() {
+        const languages = this.state.all_languages
+
+        if (languages === undefined) {
+            return <p>Loading languages...</p>
+        }
+
+        const router = createBrowserRouter([
+            {
+                path: "/",
+                element: <LanguageChooser choices={languages} choose={(language: Language) => {
+                    this.setState({language})
+                }}/>,
+            },
+        ]);
+
+        return <div className="container-fluid">
+            <div className="row">
+                {this.state.language?.name}
+                <RouterProvider router={router}/>
+            </div>
+        </div>
+    }
 }
 
 export default App;

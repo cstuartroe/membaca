@@ -1,0 +1,11 @@
+.button {
+  text-align: center;
+  font-size: 3vh;
+  border: 2px solid black;
+  border-radius: 10px;
+
+  &:hover {
+    background-color: #ddffdd;
+    cursor: pointer;
+  }
+}
