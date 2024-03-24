@@ -16,6 +16,14 @@ export type Language = {
   name: string,
 }
 
+export type Document = {
+  id: number,
+  title: string,
+  link: string,
+  language: number,
+  sentences?: Sentence[],
+}
+
 export type Sentence = {
   text: string,
   translation: string,

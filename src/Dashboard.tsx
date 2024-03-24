@@ -35,6 +35,13 @@ export default class Dashboard extends Component<Props, State> {
                         </Link>
                     </div>
                 )}
+                <div className="col-3">
+                    <Link to="/documents">
+                        <div className="big button">
+                            See documents
+                        </div>
+                    </Link>
+                </div>
             </>
         );
     }

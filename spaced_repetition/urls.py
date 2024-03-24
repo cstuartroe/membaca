@@ -7,6 +7,7 @@ from .views.current_user_state import CurrentUserStateView
 from .views.choose_language import ChooseLanguageView
 from .views.submit_document import SubmitDocumentView
 from .views.document import DocumentView
+from .views.documents import DocumentsView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,6 +25,7 @@ urlpatterns = [
     path("api/languages", LanguagesView.as_view(), name="languages"),
     path("api/submit_document", SubmitDocumentView.as_view(), name="submit_document"),
     path("api/document/<int:document_id>", DocumentView.as_view(), name="document"),
+    path("api/documents", DocumentsView.as_view(), name="document"),
 
     re_path(r'^.*$', ReactIndexView.as_view(), name="react_index")
 ]
