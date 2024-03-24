@@ -1,12 +1,11 @@
 import React, { Component } from "react";
 import { Navigate } from "react-router-dom";
 import { Language } from "./models";
-import { UserState } from "./types";
+import {LoggedInUserState} from "./types";
 import {safePost} from "./ajax_utils";
-import LoggedInHeader from "./LoggedInHeader";
 
 type Props = {
-    user_state: UserState,
+    user_state: LoggedInUserState,
     reloadUserState: () => void,
 }
 
@@ -36,7 +35,7 @@ export default class LanguageChooser extends Component<Props, State> {
     }
 
     render() {
-        if ((this.props.user_state.current_language !== null) || (this.props.user_state.user === null)) {
+        if (this.props.user_state.current_language !== null) {
             return <Navigate to="/"/>;
         }
 
@@ -45,22 +44,16 @@ export default class LanguageChooser extends Component<Props, State> {
         }
 
         return <>
-            <div className="col-12">
-                <LoggedInHeader
-                    user_state={this.props.user_state}
-                    reloadUserState={this.props.reloadUserState}
-                    clearLanguage={() => {}}/>
-                <h2 style={{textAlign: "center"}}>
-                    What language would you like to learn?
-                </h2>
+            <h2 style={{textAlign: "center"}}>
+                What language would you like to learn?
+            </h2>
 
-                <div className="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
-                    {this.state.choices.map((l: Language) => (
-                        <div className="button" onClick={() => this.chooseLanguage(l)} key={l.name}>
-                            {l.name}
-                        </div>
-                    ))}
-                </div>
+            <div className="col-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+                {this.state.choices.map((l: Language) => (
+                    <div className="button" onClick={() => this.chooseLanguage(l)} key={l.name}>
+                        {l.name}
+                    </div>
+                ))}
             </div>
         </>;
     }

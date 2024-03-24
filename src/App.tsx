@@ -5,10 +5,12 @@ import {
 } from "react-router-dom";
 
 import "../static/scss/main.scss";
-import { UserState } from "./types";
+import {LoggedInUserState, UserState} from "./types";
 import LanguageChooser from "./LanguageChooser";
 import Home from "./Home";
 import Dashboard from "./Dashboard";
+import _LoggedInPage from "./LoggedInPage";
+import AddDocument from "./AddDocument";
 
 type AppState = {
     user_state?: UserState,
@@ -37,7 +39,15 @@ class App extends Component<{}, AppState> {
             return null;
         }
 
-        const user_state: UserState = this.state.user_state;
+        const { user_state } = this.state;
+
+        const LoggedInPage = (props: {element: (s: LoggedInUserState) => React.ReactNode}) => {
+            return <_LoggedInPage
+                user_state={user_state}
+                reloadUserState={() => this.reloadUserState()}
+                clearLanguage={() => this.setState({user_state: {...user_state, current_language: null}})}
+                element={props.element}/>
+        }
 
         const router = createBrowserRouter([
             {
@@ -46,18 +56,24 @@ class App extends Component<{}, AppState> {
             },
             {
                 path: "/choose_language",
-                element: <LanguageChooser
-                    user_state={user_state}
-                    reloadUserState={() => this.reloadUserState()}
-                />,
+                element: <LoggedInPage element={(user_state) => (
+                    <LanguageChooser
+                        user_state={user_state}
+                        reloadUserState={() => this.reloadUserState()}
+                    />
+                )}/>,
             },
             {
                 path: "/dashboard",
-                element: <Dashboard
-                    user_state={user_state}
-                    reloadUserState={() => this.reloadUserState()}
-                    clearLanguage={() => this.setState({user_state: {...user_state, current_language: null}})}
-                />,
+                element: <LoggedInPage element={(user_state) => (
+                    <Dashboard user_state={user_state}/>
+                )}/>,
+            },
+            {
+                path: "/add_document",
+                element: <LoggedInPage element={(user_state) => (
+                    <AddDocument user_state={user_state}/>
+                )}/>
             },
         ]);
 

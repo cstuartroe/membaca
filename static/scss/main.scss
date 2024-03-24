@@ -1,10 +1,28 @@
+$purple: #aa55ff;
+$dark_grey: #444444;
+
 * {
   font-family: "MadimiOne", sans-serif;
+  color: $dark_grey;
+}
+
+.purple {
+  color: $purple;
+}
+
+a {
+  .button {
+    color: $dark_grey;
+  }
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 
 .button {
   text-align: center;
-  border: 2px solid black;
+  border: 2px solid $dark_grey;
   border-radius: 10px;
 
   &:hover {
@@ -13,6 +31,10 @@
   }
 }
 
-.header {
+.header, .big {
   font-size: calc(1vh + 1vw);
+}
+
+h2 {
+  text-align: center;
 }
