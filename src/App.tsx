@@ -11,6 +11,7 @@ import Home from "./Home";
 import Dashboard from "./Dashboard";
 import _LoggedInPage from "./LoggedInPage";
 import AddDocument from "./AddDocument";
+import Document from "./Document";
 
 type AppState = {
     user_state?: UserState,
@@ -73,6 +74,12 @@ class App extends Component<{}, AppState> {
                 path: "/add_document",
                 element: <LoggedInPage element={(user_state) => (
                     <AddDocument user_state={user_state}/>
+                )}/>
+            },
+            {
+                path: "/document/:documentId",
+                element: <LoggedInPage element={_ => (
+                    <Document/>
                 )}/>
             },
         ]);

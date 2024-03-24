@@ -15,3 +15,8 @@ export type Language = {
   id: number,
   name: string,
 }
+
+export type Sentence = {
+  text: string,
+  translation: string,
+}

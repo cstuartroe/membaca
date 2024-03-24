@@ -21,3 +21,11 @@ class Sentence(models.Model):
 
     def __str__(self):
         return self.text
+
+    def to_json(self):
+        # document and position are not expected to be included,
+        # since they are usually just used for orders and joins
+        return {
+            "text": self.text,
+            "translation": self.translation,
+        }

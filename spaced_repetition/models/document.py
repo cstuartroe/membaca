@@ -9,3 +9,11 @@ class Document(models.Model):
 
     def __str__(self):
         return f"{self.title} in {self.language.name}"
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "language": self.language.id,
+            "link": self.link,
+        }
