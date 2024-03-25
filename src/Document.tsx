@@ -40,10 +40,10 @@ class _Document extends Component<Props, State> {
                 {sentences?.map((sentence, i) => (
                     <div className="row" key={i} style={{paddingBottom: ".5vh"}}>
                         <div className="col-6">
-                            {sentence.text}
+                            <p>{sentence.text}</p>
                         </div>
                         <div className="col-6">
-                            {sentence.translation}
+                            <p>{sentence.translation}</p>
                         </div>
                     </div>
                 ))}

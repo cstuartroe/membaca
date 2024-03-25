@@ -1,6 +1,0 @@
-@font-face {
-    font-family: "MadimiOne";
-    src: url("/static/font/MadimiOne-Regular.ttf") format('truetype'),
-         url("/static/font/MadimiOne-Regular.woff") format('woff');
-    font-weight: normal;
-}

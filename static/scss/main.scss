@@ -1,9 +1,14 @@
 $purple: #aa55ff;
 $dark_grey: #444444;
 
-* {
-  font-family: "MadimiOne", sans-serif;
+h2, .button {
+  font-family: "Madimi One", sans-serif;
   color: $dark_grey;
+}
+
+input, textarea, p {
+  font-family: "Noto Sans", sans-serif;
+  color: black;
 }
 
 .purple {
@@ -31,7 +36,7 @@ a {
   }
 }
 
-.header, .big {
+h2, .big {
   font-size: calc(1vh + 1vw);
 }
 

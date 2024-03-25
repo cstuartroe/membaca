@@ -37,28 +37,34 @@ export default class LoggedInPage extends Component<Props, State> {
                 <div className="row">
                     <div className="col-2" style={{textAlign: "left"}}>
                         {user_state.current_language ? (
-                            `Learning ${user_state.current_language.name}`
+                            <h2>
+                                Learning {user_state.current_language.name}
+                            </h2>
                         ) : null}
                     </div>
                     <div className="col-2" style={{textAlign: "left"}}>
                         {this.props.user_state.current_language ? (
                             <Link to="/choose_language">
-                                <div className="button">
+                                <div className="big button">
                                     Switch language
                                 </div>
                             </Link>
                         ) : null}
                     </div>
                     <div className="col-4" style={{textAlign: "center"}}>
-                        <Link to="/" className="purple">
-                            Membaca
+                        <Link to="/">
+                            <h2 className="purple">
+                                Membaca
+                            </h2>
                         </Link>
                     </div>
                     <div className="col-2" style={{textAlign: "center"}}>
-                        {user_state.user.username}
+                        <h2>
+                            {user_state.user.username}
+                        </h2>
                     </div>
                     <div className="col-2" style={{textAlign: "right"}}>
-                        <div className="button" onClick={() => this.logOut()}>
+                        <div className="big button" onClick={() => this.logOut()}>
                             Log out
                         </div>
                     </div>
