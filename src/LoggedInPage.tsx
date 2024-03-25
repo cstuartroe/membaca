@@ -42,9 +42,11 @@ export default class LoggedInPage extends Component<Props, State> {
                     </div>
                     <div className="col-2" style={{textAlign: "left"}}>
                         {this.props.user_state.current_language ? (
-                            <div className="button" onClick={() => this.props.clearLanguage()}>
-                                Switch language
-                            </div>
+                            <Link to="/choose_language">
+                                <div className="button">
+                                    Switch language
+                                </div>
+                            </Link>
                         ) : null}
                     </div>
                     <div className="col-4" style={{textAlign: "center"}}>

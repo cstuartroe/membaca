@@ -28,7 +28,7 @@ class App extends Component<{}, AppState> {
     }
 
     reloadUserState() {
-        fetch("/api/current_user_state")
+        return fetch("/api/current_user_state")
             .then(res => res.json())
             .then(data => this.setState({
                 user_state: data,
@@ -47,13 +47,17 @@ class App extends Component<{}, AppState> {
             },
             {
                 path: "*",
-                element: <Navigate to="/choose_language"/>
+                element: <Navigate to={`/choose_language?next=${window.location.pathname}`}/>
             },
         ];
     }
 
     languageChosenRoutes(user: User, current_language: Language) {
         return [
+            {
+                path: "/choose_language",
+                element: <LanguageChooser reloadUserState={() => this.reloadUserState()}/>,
+            },
             {
                 path: "/dashboard",
                 element: <Dashboard is_superuser={user.is_superuser}/>,
