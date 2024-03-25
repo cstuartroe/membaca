@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-import {Link, useParams} from "react-router-dom";
-import { Document } from "./models";
-import {LoggedInUserState} from "./types";
+import {Link} from "react-router-dom";
+import {Document, Language} from "./models";
 
 type Props = {
-    user_state: LoggedInUserState,
+    language: Language,
 }
 
 type State = {
@@ -19,7 +18,17 @@ export default class Documents extends Component<Props, State> {
     }
 
     componentDidMount() {
-        fetch(`/api/documents?language_id=${this.props.user_state.current_language?.id}`)
+        this.fetchDocuments()
+    }
+
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+        if (prevProps.language !== this.props.language) {
+            this.fetchDocuments();
+        }
+    }
+
+    fetchDocuments() {
+        fetch(`/api/documents?language_id=${this.props.language.id}`)
             .then(res => res.json())
             .then(data => this.setState({
                 documents: data,

@@ -1,14 +1,18 @@
 import React, { Component } from "react";
-import {UserState} from "./types";
 import {safePost} from "./ajax_utils";
-import { LoggedInUserState } from "./types";
-import {Link, Navigate} from "react-router-dom";
+import {Link} from "react-router-dom";
+import {Language, User} from "./models";
+
+export type LoggedInUserState = {
+    user: User,
+    current_language: Language | null,
+}
 
 type Props = {
-    user_state: UserState,
+    user_state: LoggedInUserState,
     reloadUserState: () => void,
     clearLanguage: () => void,
-    element: (user_state: LoggedInUserState) => React.ReactNode,
+    children?: React.ReactNode,
 }
 
 type State = {
@@ -25,18 +29,10 @@ export default class LoggedInPage extends Component<Props, State> {
         safePost("/admin/logout/", {}).then(() => this.props.reloadUserState())
     }
 
+    header() {
+        const { user_state } = this.props;
 
-    render() {
-        if (this.props.user_state.user === null) {
-            return <Navigate to="/"/>;
-        }
-
-        const user_state: LoggedInUserState = {
-            user: this.props.user_state.user,
-            current_language: this.props.user_state.current_language,
-        };
-
-        return <>
+        return (
             <div className="col-12 header">
                 <div className="row">
                     <div className="col-2" style={{textAlign: "left"}}>
@@ -66,7 +62,18 @@ export default class LoggedInPage extends Component<Props, State> {
                     </div>
                 </div>
             </div>
-            {this.props.element(user_state)}
-        </>;
+        );
+    }
+
+
+    render() {
+        return (
+            <div className="container-fluid">
+                <div className="row">
+                    {this.header()}
+                    {this.props.children}
+                </div>
+            </div>
+        );
     }
 }

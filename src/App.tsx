@@ -1,21 +1,24 @@
 import React, { Component } from "react";
 import {
-    createBrowserRouter,
+    createBrowserRouter, Navigate,
     RouterProvider,
 } from "react-router-dom";
 
 import "../static/scss/main.scss";
-import {LoggedInUserState, UserState} from "./types";
+import {LoggedInUserState} from "./LoggedInPage";
 import LanguageChooser from "./LanguageChooser";
-import Home from "./Home";
 import Dashboard from "./Dashboard";
-import _LoggedInPage from "./LoggedInPage";
+import LoggedInPage from "./LoggedInPage";
 import AddDocument from "./AddDocument";
 import Document from "./Document";
 import Documents from "./Documents";
+import {Language, User} from "./models";
 
 type AppState = {
-    user_state?: UserState,
+    user_state?: {
+        user: User | null,
+        current_language: Language | null,
+    },
 }
 
 class App extends Component<{}, AppState> {
@@ -36,66 +39,86 @@ class App extends Component<{}, AppState> {
         this.reloadUserState();
     }
 
+    noLanguageChosenRoutes() {
+        return [
+            {
+                path: "/choose_language",
+                element: <LanguageChooser reloadUserState={() => this.reloadUserState()}/>,
+            },
+            {
+                path: "*",
+                element: <Navigate to="/choose_language"/>
+            },
+        ];
+    }
+
+    languageChosenRoutes(user: User, current_language: Language) {
+        return [
+            {
+                path: "/dashboard",
+                element: <Dashboard is_superuser={user.is_superuser}/>,
+            },
+            {
+                path: "/add_document",
+                element: <AddDocument language={current_language}/>,
+            },
+            {
+                path: "/document/:documentId",
+                element: <Document/>,
+            },
+            {
+                path: "/documents",
+                element: <Documents language={current_language}/>,
+            },
+            {
+                path: "*",
+                element: <Navigate to="/dashboard"/>
+            },
+        ];
+    }
+
+    loggedInRoutes(user_state: LoggedInUserState) {
+        const { user, current_language } = user_state;
+
+        if (current_language === null) {
+            return this.noLanguageChosenRoutes();
+        } else {
+            return this.languageChosenRoutes(user, current_language);
+        }
+    }
+
+    loggedInPage(user_state: LoggedInUserState) {
+        const routesWithoutWrapping = this.loggedInRoutes(user_state);
+        const routesWithWrapping = routesWithoutWrapping.map(({path, element}) => (
+            {
+                path,
+                element: (
+                    <LoggedInPage
+                        user_state={user_state}
+                        reloadUserState={() => this.reloadUserState()}
+                        clearLanguage={() => this.setState({user_state: {...user_state, current_language: null}})}>
+                        {element}
+                    </LoggedInPage>
+                ),
+            }
+        ))
+
+        return <RouterProvider router={createBrowserRouter(routesWithWrapping)}/>;
+    }
+
     render() {
         if (this.state.user_state === undefined) {
             return null;
         }
 
-        const { user_state } = this.state;
+        const { user, current_language } = this.state.user_state;
 
-        const LoggedInPage = (props: {element: (s: LoggedInUserState) => React.ReactNode}) => {
-            return <_LoggedInPage
-                user_state={user_state}
-                reloadUserState={() => this.reloadUserState()}
-                clearLanguage={() => this.setState({user_state: {...user_state, current_language: null}})}
-                element={props.element}/>
+        if (user === null) {
+            window.location.href = "/google_sso/login/?next=/";
+            return null;
+        } else {
+            return this.loggedInPage({user, current_language})
         }
-
-        const router = createBrowserRouter([
-            {
-                path: "/",
-                element: <Home user_state={user_state}/>
-            },
-            {
-                path: "/choose_language",
-                element: <LoggedInPage element={(user_state) => (
-                    <LanguageChooser
-                        user_state={user_state}
-                        reloadUserState={() => this.reloadUserState()}
-                    />
-                )}/>,
-            },
-            {
-                path: "/dashboard",
-                element: <LoggedInPage element={(user_state) => (
-                    <Dashboard user_state={user_state}/>
-                )}/>,
-            },
-            {
-                path: "/add_document",
-                element: <LoggedInPage element={(user_state) => (
-                    <AddDocument user_state={user_state}/>
-                )}/>
-            },
-            {
-                path: "/document/:documentId",
-                element: <LoggedInPage element={_ => (
-                    <Document/>
-                )}/>
-            },
-            {
-                path: "/documents",
-                element: <LoggedInPage element={user_state => (
-                    <Documents user_state={user_state}/>
-                )}/>
-            },
-        ]);
-
-        return <div className="container-fluid">
-            <div className="row">
-                <RouterProvider router={router}/>
-            </div>
-        </div>
     }
 }
 

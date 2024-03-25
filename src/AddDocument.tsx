@@ -1,7 +1,7 @@
 import React, { Component, useState } from "react";
-import { LoggedInUserState } from "./types";
 import {Navigate} from "react-router-dom";
 import {safePost} from "./ajax_utils";
+import {Language} from "./models";
 
 
 type TextBoxProps = {
@@ -74,7 +74,7 @@ function SentencesOrTranslationRows(props: SentencesOrTranslationRowsProps) {
 }
 
 type Props = {
-    user_state: LoggedInUserState,
+    language: Language,
 }
 
 type State = {
@@ -119,7 +119,7 @@ export default class AddDocument extends Component<Props, State> {
         safePost(
             "/api/submit_document",
             {
-                language: this.props.user_state.current_language!.id,
+                language: this.props.language.id,
                 title: this.state.title,
                 link: this.state.link,
                 sentences: this.state.sentences,
@@ -246,20 +246,14 @@ export default class AddDocument extends Component<Props, State> {
     }
 
     render() {
-        if (this.props.user_state.current_language === null) {
-            return <Navigate to="/"/>;
-        }
-
         if (this.state.documentId !== undefined) {
             return <Navigate to={`/document/${this.state.documentId}`}/>;
         }
 
-        const {current_language} = this.props.user_state;
-
         return (
             <>
                 <div className="col-12">
-                    <p style={{textAlign: "center"}}>Adding document for {current_language.name}</p>
+                    <p style={{textAlign: "center"}}>Adding document for {this.props.language.name}</p>
                 </div>
                 <div className="col-12 col-md-8 offset-md-2">
                     <h2>Title</h2>

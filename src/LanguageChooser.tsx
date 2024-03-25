@@ -1,11 +1,8 @@
 import React, { Component } from "react";
-import { Navigate } from "react-router-dom";
-import { Language } from "./models";
-import {LoggedInUserState} from "./types";
+import {Language} from "./models";
 import {safePost} from "./ajax_utils";
 
 type Props = {
-    user_state: LoggedInUserState,
     reloadUserState: () => void,
 }
 
@@ -35,10 +32,6 @@ export default class LanguageChooser extends Component<Props, State> {
     }
 
     render() {
-        if (this.props.user_state.current_language !== null) {
-            return <Navigate to="/"/>;
-        }
-
         if (this.state.choices === undefined) {
             return null;
         }
