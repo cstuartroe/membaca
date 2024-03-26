@@ -26,6 +26,7 @@ class Sentence(models.Model):
         # document and position are not expected to be included,
         # since they are usually just used for orders and joins
         return {
+            "id": self.id,
             "text": self.text,
             "translation": self.translation,
         }

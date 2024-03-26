@@ -25,6 +25,19 @@ export type Document = {
 }
 
 export type Sentence = {
+  id: number,
   text: string,
   translation: string,
+}
+
+export type Substring = {
+  start: number,
+  end: number,
+}
+
+export type WordInSentence = {
+  id: number,
+  sentence_id: number,
+  lemma_id: number,
+  substrings: Substring[],
 }

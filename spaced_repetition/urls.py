@@ -8,6 +8,7 @@ from .views.choose_language import ChooseLanguageView
 from .views.submit_document import SubmitDocumentView
 from .views.document import DocumentView
 from .views.documents import DocumentsView
+from .views.words_in_sentence import WordsInSentenceView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +27,7 @@ urlpatterns = [
     path("api/submit_document", SubmitDocumentView.as_view(), name="submit_document"),
     path("api/document/<int:document_id>", DocumentView.as_view(), name="document"),
     path("api/documents", DocumentsView.as_view(), name="document"),
+    path("api/words_in_sentence", WordsInSentenceView.as_view(), name="words_in_sentence"),
 
     re_path(r'^.*$', ReactIndexView.as_view(), name="react_index")
 ]
