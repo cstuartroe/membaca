@@ -118,7 +118,7 @@ class App extends Component<{}, AppState> {
         const { user, current_language } = this.state.user_state;
 
         if (user === null) {
-            window.location.href = "/google_sso/login/?next=/";
+            window.location.href = `/google_sso/login/?next=${window.location.pathname}`;
             return null;
         } else {
             return this.loggedInPage({user, current_language})
