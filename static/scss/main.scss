@@ -9,9 +9,15 @@ h2, .button {
   color: $dark_grey;
 }
 
-input, textarea, p {
+input, textarea, p, .document-sentence, .document-translation {
   font-family: "Noto Sans", sans-serif;
   color: black;
+}
+
+$document_font_size: 1.75vh;
+
+.document-sentence, .document-translation {
+  font-size: $document_font_size;
 }
 
 .purple {
@@ -70,6 +76,32 @@ h2 {
 
     &.focused {
       background-color: $light_green;
+    }
+  }
+
+  position: relative;
+
+  .lemma-assignment {
+    position: absolute;
+    top: calc($document_font_size + .5vh);
+    left: 0;
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid $dark_grey;
+    background-color: white;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    cursor: default;
+
+    .lemma {
+      display: flex;
+      flex-direction: row;
+
+      .citation-form {
+        padding-right: 10px;
+        font-style: italic;
+      }
     }
   }
 }

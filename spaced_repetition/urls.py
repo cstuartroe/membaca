@@ -9,6 +9,7 @@ from .views.submit_document import SubmitDocumentView
 from .views.document import DocumentView
 from .views.documents import DocumentsView
 from .views.words_in_sentence import WordsInSentenceView
+from .views.search_lemmas import SearchLemmasView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +29,7 @@ urlpatterns = [
     path("api/document/<int:document_id>", DocumentView.as_view(), name="document"),
     path("api/documents", DocumentsView.as_view(), name="document"),
     path("api/words_in_sentence", WordsInSentenceView.as_view(), name="words_in_sentence"),
+    path("api/search_lemmas", SearchLemmasView.as_view(), name="search_lemmas"),
 
     re_path(r'^.*$', ReactIndexView.as_view(), name="react_index")
 ]

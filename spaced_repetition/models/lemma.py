@@ -9,3 +9,10 @@ class Lemma(models.Model):
 
     def __str__(self):
         return f"{self.language.name} lemma {self.citation_form} \"{self.translation}\""
+
+    def to_json(self):
+        return {
+            "language_id": self.language_id,
+            "citation_form": self.citation_form,
+            "translation": self.translation,
+        }

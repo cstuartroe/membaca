@@ -5,7 +5,9 @@ from spaced_repetition.models.lemma import Lemma
 from spaced_repetition.models.lemma_add import LemmaAdd
 from spaced_repetition.models.sentence import Sentence
 from spaced_repetition.models.trial import Trial
+from spaced_repetition.models.user_settings import UserSettings
 from spaced_repetition.models.word_in_sentence import WordInSentence, Substring
+from spaced_repetition.models.word import Word
 
 
 admin.site.register(Document)
@@ -14,5 +16,7 @@ admin.site.register(Lemma)
 admin.site.register(LemmaAdd)
 admin.site.register(Sentence)
 admin.site.register(Trial)
+admin.site.register(UserSettings)
 admin.site.register(WordInSentence)
 admin.site.register(Substring)
+admin.site.register(Word)

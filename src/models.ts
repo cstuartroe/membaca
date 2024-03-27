@@ -16,6 +16,12 @@ export type Language = {
   name: string,
 }
 
+export type Lemma = {
+  language_id: number,
+  citation_form: string,
+  translation: string,
+}
+
 export type Document = {
   id: number,
   title: string,

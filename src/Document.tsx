@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { useParams } from "react-router-dom";
 const classNames = require('classnames');
-import {Sentence, WordInSentence, Substring} from "./models";
+import {Sentence, WordInSentence, Substring, Lemma, Language} from "./models";
 
 
 const FAKE_WORD_ID = -1;
@@ -17,8 +17,47 @@ const SKIP_CHARACTERS: string[] = [
 ];
 
 
+type LemmaAssignmentCardProps = {
+    search_string: string,
+    language: Language,
+}
+
+type LemmaAssignmentCardState = {
+    suggestions: Lemma[],
+}
+
+class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssignmentCardState> {
+    constructor(props: LemmaAssignmentCardProps) {
+        super(props);
+        this.state = {
+            suggestions: [],
+        }
+    }
+
+    componentDidMount() {
+        fetch(`/api/search_lemmas?language_id=${this.props.language.id}&q=${this.props.search_string}&num_results=5`)
+            .then(res => res.json())
+            .then(suggestions => this.setState({suggestions}));
+    }
+    
+    render() {
+        return (
+            <div className="lemma-assignment">
+                {this.state.suggestions.map((lemma, i) => (
+                    <div key={i} className="lemma">
+                        <div className="citation-form">{lemma.citation_form}</div>
+                        <div className="translation">"{lemma.translation}"</div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+}
+
+
 type DocumentSentenceProps = {
     sentence: Sentence,
+    language: Language,
 }
 
 type AssignedSubstring = {
@@ -150,6 +189,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
     }
 
     render() {
+        const { language } = this.props;
         const { text } = this.props.sentence;
         const { focused } = this.state;
         const [words, substrings] = this.deriveWordsAndSubstrings();
@@ -211,6 +251,9 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                                 {...props}
                             >
                                 {substring_text}
+                                {substring_expanded && (
+                                    <LemmaAssignmentCard search_string={substring_text} language={language}/>
+                                )}
                             </span>
                         );
                     case ASSIGNING_LEMMA_ID:
@@ -235,13 +278,14 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
             }
         });
 
-        return <p>{paragraphChildren}</p>;
+        return <div className="document-sentence">{paragraphChildren}</div>;
     }
 }
 
 
 type Props = {
     documentId: number,
+    language: Language,
 }
 
 type State = {
@@ -278,10 +322,10 @@ class _Document extends Component<Props, State> {
                 {sentences?.map((sentence, i) => (
                     <div className="row" key={i} style={{paddingBottom: ".5vh"}}>
                         <div className="col-6 col-md-4 offset-md-2">
-                            <DocumentSentence sentence={sentence}/>
+                            <DocumentSentence sentence={sentence} language={this.props.language}/>
                         </div>
                         <div className="col-6 col-md-4">
-                            <p>{sentence.translation}</p>
+                            <div className="document-translation">{sentence.translation}</div>
                         </div>
                     </div>
                 ))}
@@ -290,12 +334,12 @@ class _Document extends Component<Props, State> {
     }
 }
 
-export default function Document(props: {}) {
+export default function Document(props: {language: Language}) {
     const { documentId } = useParams();
 
     if (documentId === undefined) {
         return null;
     }
 
-    return <_Document documentId={parseInt(documentId)}/>
+    return <_Document documentId={parseInt(documentId)} language={props.language}/>
 }

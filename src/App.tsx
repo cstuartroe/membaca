@@ -68,7 +68,7 @@ class App extends Component<{}, AppState> {
             },
             {
                 path: "/document/:documentId",
-                element: <Document/>,
+                element: <Document language={current_language}/>,
             },
             {
                 path: "/documents",
