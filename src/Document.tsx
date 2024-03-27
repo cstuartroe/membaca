@@ -1,9 +1,12 @@
 import React, { Component } from "react";
 import { useParams } from "react-router-dom";
+const classNames = require('classnames');
 import {Sentence, WordInSentence, Substring} from "./models";
 
 
+const FAKE_WORD_ID = -1;
 const UNASSIGNED_LEMMA_ID = -1;
+const ASSIGNING_LEMMA_ID = -2;
 const SKIP_CHARACTERS: string[] = [
     " ",
     ".",
@@ -24,8 +27,9 @@ type AssignedSubstring = {
 }
 
 type DocumentSentenceState = {
-    words: WordInSentence[],
-    substrings: AssignedSubstring[]
+    fetched_words: WordInSentence[],
+    assigning_substrings: Substring[],
+    selection_start_substring?: number,
     focused?: {
         word_index: number,
         expanded: boolean,
@@ -36,22 +40,36 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
     constructor(props: DocumentSentenceProps) {
         super(props);
         this.state = {
-            words: [],
-            substrings: [],
+            fetched_words: [],
+            assigning_substrings: [],
         };
     }
 
     componentDidMount() {
         fetch(`/api/words_in_sentence?sentence_id=${this.props.sentence.id}`)
             .then(res => res.json())
-            .then(words => this.setUpWords(words));
+            .then(words => this.setState({
+                fetched_words: words,
+                assigning_substrings: [],
+                focused: undefined,
+            }));
     }
 
-    setUpWords(fetched_words: WordInSentence[]) {
+    deriveWordsAndSubstrings(): [WordInSentence[], AssignedSubstring[]] {
         const { text } = this.props.sentence;
+        const { fetched_words, assigning_substrings, focused } = this.state;
 
         const words: WordInSentence[] = [];
         words.push(...fetched_words);
+
+        if (assigning_substrings.length > 0) {
+            words.push({
+                id: FAKE_WORD_ID,
+                sentence_id: this.props.sentence.id,
+                lemma_id: ASSIGNING_LEMMA_ID,
+                substrings: assigning_substrings,
+            });
+        }
 
         const character_assignments: {[key: number]: number | undefined} = {};
         const substrings: AssignedSubstring[] = [];
@@ -93,7 +111,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                     word_index: words.length,
                 })
                 words.push({
-                    id: -1,
+                    id: FAKE_WORD_ID,
                     sentence_id: this.props.sentence.id,
                     lemma_id: UNASSIGNED_LEMMA_ID,
                     substrings: [
@@ -128,21 +146,92 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
 
         substrings.sort((a, b) => a.substring.start - b.substring.start);
 
-        this.setState({words, substrings, focused: undefined});
+        return [words, substrings];
     }
 
     render() {
         const { text } = this.props.sentence;
-        const { words, substrings } = this.state;
+        const { focused } = this.state;
+        const [words, substrings] = this.deriveWordsAndSubstrings();
 
-        const paragraphChildren = this.state.substrings.map(assigned_substring => {
+        const paragraphChildren = substrings.map((assigned_substring, i) => {
             const substring_text = text.substring(assigned_substring.substring.start, assigned_substring.substring.end);
-            if (assigned_substring.word_index === undefined) {
+            const substring_focused = focused?.word_index === assigned_substring.word_index;
+            const substring_expanded = substring_focused && !!focused?.expanded;
+
+            const {word_index} = assigned_substring;
+
+            if (word_index === undefined) {
                 return substring_text;
-            } else if (words[assigned_substring.word_index].id === UNASSIGNED_LEMMA_ID) {
-                return <span style={{backgroundColor: "#999"}}>{substring_text}</span>;
             } else {
-                return <span style={{backgroundColor: "#9f9"}}>{substring_text}</span>;
+                const onMouseEnter = () => this.setState({focused: {word_index, expanded: false}});
+                const onMouseLeave = () => this.setState({focused: undefined});
+                const onMouseDown = () => this.setState({selection_start_substring: i});
+                const onMouseUp = () => {
+                    const selection_object = window.getSelection();
+
+                    if (this.state.selection_start_substring !== undefined && selection_object !== null) {
+                        const start = substrings[this.state.selection_start_substring].substring.start + selection_object.anchorOffset;
+                        const end = assigned_substring.substring.start + selection_object.focusOffset;
+
+                        if (start !== end) {
+                            this.setState({
+                                assigning_substrings: this.state.assigning_substrings.concat([{start, end}]),
+                                focused: {
+                                    word_index: this.state.fetched_words.length, // assigning word index
+                                    expanded: false,
+                                },
+                            });
+                            return;
+                        }
+                    }
+
+                    this.setState({focused: {word_index, expanded: !substring_expanded}});
+                }
+
+                const extra_classnames = {
+                    sentence_word: true,
+                    focused: substring_focused,
+                    expanded: substring_expanded,
+                };
+
+                const props = {
+                    key: i,
+                    onMouseEnter,
+                    onMouseLeave,
+                    onMouseDown,
+                    onMouseUp,
+                }
+
+                switch (words[word_index].lemma_id) {
+                    case UNASSIGNED_LEMMA_ID:
+                        return (
+                            <span
+                                className={classNames('unassigned_word', extra_classnames)}
+                                {...props}
+                            >
+                                {substring_text}
+                            </span>
+                        );
+                    case ASSIGNING_LEMMA_ID:
+                        return (
+                            <span
+                                className={classNames('assigning_word', extra_classnames)}
+                                {...props}
+                            >
+                                {substring_text}
+                            </span>
+                        );
+                    default:
+                        return (
+                            <span
+                                className={classNames('assigned_word', extra_classnames)}
+                                {...props}
+                            >
+                                {substring_text}
+                            </span>
+                        );
+                }
             }
         });
 

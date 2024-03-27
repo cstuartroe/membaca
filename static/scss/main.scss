@@ -1,5 +1,8 @@
 $purple: #aa55ff;
 $dark_grey: #444444;
+$light_grey: #ddd;
+$light_green: #ddffdd;
+$light_yellow: #ffffaa;
 
 h2, .button {
   font-family: "Madimi One", sans-serif;
@@ -31,7 +34,7 @@ a {
   border-radius: 10px;
 
   &:hover {
-    background-color: #ddffdd;
+    background-color: $light_green;
     cursor: pointer;
   }
 }
@@ -42,4 +45,31 @@ h2, .big {
 
 h2 {
   text-align: center;
+}
+
+
+.sentence_word {
+  cursor: pointer;
+
+  &.assigned_word {
+    &.focused {
+      background-color: $light_green;
+    }
+  }
+
+  &.assigning_word {
+    background-color: $light_yellow;
+
+    &.focused {
+      background-color: $light_green;
+    }
+  }
+
+  &.unassigned_word {
+    background-color: $light_grey;
+
+    &.focused {
+      background-color: $light_green;
+    }
+  }
 }
