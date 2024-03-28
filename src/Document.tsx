@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { useParams } from "react-router-dom";
 const classNames = require('classnames');
 import {Sentence, WordInSentence, Substring, Lemma, Language} from "./models";
+import {safePost} from "./ajax_utils";
 
 
 const FAKE_WORD_ID = -1;
@@ -17,13 +18,68 @@ const SKIP_CHARACTERS: string[] = [
 ];
 
 
+type LemmaDisplayCardProps = {
+    word_in_sentence: WordInSentence,
+}
+
+type LemmaDisplayCardState = {
+    lemma?: Lemma,
+}
+
+class LemmaDisplayCard extends Component<LemmaDisplayCardProps, LemmaDisplayCardState> {
+    constructor(props: LemmaDisplayCardProps) {
+        super(props);
+        this.state = {};
+    }
+
+    componentDidMount() {
+        const { lemma_id } = this.props.word_in_sentence;
+
+        if (lemma_id === null) {
+            return;
+        }
+
+        fetch(`/api/lemma?id=${lemma_id}`)
+            .then(res => res.json())
+            .then(lemma => this.setState({lemma}));
+    }
+
+    render() {
+        const { lemma } = this.state;
+
+        let content: React.ReactNode = null;
+
+        if (this.props.word_in_sentence.lemma_id === null) {
+            content = "No lemma"
+        } else if (lemma !== undefined) {
+            content = <>
+                <div className="citation-form">{lemma.citation_form}</div>
+                <div className="translation">"{lemma.translation}"</div>
+            </>;
+        }
+
+        return (
+            <div className="lemma-card">
+                <div className="lemma">
+                    {content}
+                </div>
+            </div>
+        );
+    }
+}
+
 type LemmaAssignmentCardProps = {
     search_string: string,
     language: Language,
+    word_in_sentence: WordInSentence,
+    loadSentence: () => void,
 }
 
 type LemmaAssignmentCardState = {
     suggestions: Lemma[],
+    search_string: string,
+    new_lemma?: Lemma,
+    status: "unsubmitted" | "submitting" | "submitted",
 }
 
 class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssignmentCardState> {
@@ -31,20 +87,140 @@ class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssig
         super(props);
         this.state = {
             suggestions: [],
+            search_string: props.search_string,
+            status: "unsubmitted",
         }
     }
 
-    componentDidMount() {
-        fetch(`/api/search_lemmas?language_id=${this.props.language.id}&q=${this.props.search_string}&num_results=5`)
+    performSearch() {
+        const search_string = this.state.search_string;
+
+        fetch(`/api/search_lemmas?language_id=${this.props.language.id}&q=${search_string}&num_results=5`)
             .then(res => res.json())
             .then(suggestions => this.setState({suggestions}));
     }
-    
+
+    componentDidMount() {
+        this.performSearch()
+    }
+
+    componentDidUpdate(prevProps: Readonly<LemmaAssignmentCardProps>, prevState: Readonly<LemmaAssignmentCardState>, snapshot?: any) {
+        if (prevState.search_string != this.state.search_string) {
+            this.performSearch();
+        }
+    }
+
+    submitNewLemma() {
+        const { new_lemma } = this.state;
+        if (new_lemma === undefined) { return; }
+
+        this.submitLemma({
+            lemma: {
+                citation_form: new_lemma.citation_form,
+                translation: new_lemma.translation,
+            }
+        });
+    }
+
+    submitLemma(data: any) {
+        this.setState({status: "submitting"});
+        safePost(
+            "/api/words_in_sentence",
+            {
+                sentence_id: this.props.word_in_sentence.sentence_id,
+                language_id: this.props.language.id,
+                substrings: this.props.word_in_sentence.substrings,
+                ...data,
+            },
+        ).then(res => {
+            if (res.ok) {
+                this.setState({status: "submitted"});
+                this.props.loadSentence();
+            }
+        })
+    }
+
     render() {
+        const { new_lemma, status } = this.state;
+
+        if (status === "submitted") {
+            return null;
+        }
+
+        if (new_lemma !== undefined) {
+            return (
+                <div className="lemma-card">
+                    <div className="label">Citation form</div>
+                    <div>
+                        <input
+                            type="text"
+                            value={new_lemma.citation_form}
+                            onChange={e => this.setState({
+                                new_lemma: {...new_lemma, citation_form: e.target.value},
+                            })}/>
+                    </div>
+                    <div className="label">Translation</div>
+                    <div>
+                        <input
+                            type="text"
+                            value={new_lemma.translation}
+                            onChange={e => this.setState({
+                                new_lemma: {...new_lemma, translation: e.target.value},
+                            })}/>
+                    </div>
+                    <div
+                        className="button"
+                        style={{marginTop: "5px"}}
+                        onClick={() => {
+                            if (status === "unsubmitted") {
+                                this.submitNewLemma();
+                            }
+                        }}
+                    >
+                        {(status === "unsubmitted") ? "Submit" : "..."}
+                    </div>
+                </div>
+            );
+        }
+
         return (
-            <div className="lemma-assignment">
+            <div className="lemma-card">
+                <div className="button"
+                     style={{marginBottom: "5px"}}
+                     onClick={() => this.setState({
+                         new_lemma: {
+                             id: UNASSIGNED_LEMMA_ID,
+                             language_id: this.props.language.id,
+                             citation_form: this.props.search_string,
+                             translation: "",
+                         }
+                     })}
+                >
+                    New lemma
+                </div>
+
+                <div className="button"
+                     style={{marginBottom: "5px"}}
+                     onClick={() => this.submitLemma({})}
+                >
+                    No lemma
+                </div>
+
+                <div>
+                    <input
+                        type="text"
+                        value={this.state.search_string}
+                        onChange={e => this.setState({
+                            search_string: e.target.value,
+                        })}/>
+                </div>
                 {this.state.suggestions.map((lemma, i) => (
-                    <div key={i} className="lemma">
+                    <div
+                        key={i}
+                        className="lemma"
+                        style={{cursor: "pointer"}}
+                        onClick={() => this.submitLemma({lemma_id: lemma.id})}
+                    >
                         <div className="citation-form">{lemma.citation_form}</div>
                         <div className="translation">"{lemma.translation}"</div>
                     </div>
@@ -84,7 +260,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
         };
     }
 
-    componentDidMount() {
+    loadSentence() {
         fetch(`/api/words_in_sentence?sentence_id=${this.props.sentence.id}`)
             .then(res => res.json())
             .then(words => this.setState({
@@ -92,6 +268,10 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                 assigning_substrings: [],
                 focused: undefined,
             }));
+    }
+
+    componentDidMount() {
+        this.loadSentence()
     }
 
     deriveWordsAndSubstrings(): [WordInSentence[], AssignedSubstring[]] {
@@ -226,8 +406,14 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                         }
                     }
 
-                    this.setState({focused: {word_index, expanded: !substring_expanded}});
+                    if (!substring_expanded) {
+                        this.setState({focused: {word_index, expanded: true}});
+                    }
                 }
+
+                const actually_expand = substring_expanded && (assigned_substring.substring === words[word_index].substrings[0]);
+                const search_string = words[word_index].substrings.map(substring => (
+                    text.substring(substring.start, substring.end))).join(' ');
 
                 const extra_classnames = {
                     sentence_word: true,
@@ -251,8 +437,13 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                                 {...props}
                             >
                                 {substring_text}
-                                {substring_expanded && (
-                                    <LemmaAssignmentCard search_string={substring_text} language={language}/>
+                                {actually_expand && (
+                                    <LemmaAssignmentCard
+                                        search_string={search_string}
+                                        language={language}
+                                        loadSentence={() => this.loadSentence()}
+                                        word_in_sentence={words[word_index]}
+                                    />
                                 )}
                             </span>
                         );
@@ -263,6 +454,14 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                                 {...props}
                             >
                                 {substring_text}
+                                {actually_expand && (
+                                    <LemmaAssignmentCard
+                                        search_string={search_string}
+                                        language={language}
+                                        loadSentence={() => this.loadSentence()}
+                                        word_in_sentence={words[word_index]}
+                                    />
+                                )}
                             </span>
                         );
                     default:
@@ -272,6 +471,9 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                                 {...props}
                             >
                                 {substring_text}
+                                {actually_expand && (
+                                    <LemmaDisplayCard word_in_sentence={words[word_index]}/>
+                                )}
                             </span>
                         );
                 }

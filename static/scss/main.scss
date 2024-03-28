@@ -4,7 +4,7 @@ $light_grey: #ddd;
 $light_green: #ddffdd;
 $light_yellow: #ffffaa;
 
-h2, .button {
+h2, .button, .label {
   font-family: "Madimi One", sans-serif;
   color: $dark_grey;
 }
@@ -16,7 +16,7 @@ input, textarea, p, .document-sentence, .document-translation {
 
 $document_font_size: 1.75vh;
 
-.document-sentence, .document-translation {
+.document-sentence, .document-translation, .label {
   font-size: $document_font_size;
 }
 
@@ -81,7 +81,7 @@ h2 {
 
   position: relative;
 
-  .lemma-assignment {
+  .lemma-card {
     position: absolute;
     top: calc($document_font_size + .5vh);
     left: 0;

@@ -12,6 +12,7 @@ class Lemma(models.Model):
 
     def to_json(self):
         return {
+            "id": self.id,
             "language_id": self.language_id,
             "citation_form": self.citation_form,
             "translation": self.translation,

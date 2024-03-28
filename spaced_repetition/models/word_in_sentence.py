@@ -12,7 +12,7 @@ class WordInSentence(models.Model):
     def to_json(self) -> dict:
         return {
             "id": self.id,
-            "lemma_id": self.lemma.id,
+            "lemma_id": self.lemma and self.lemma.id,
             "sentence_id": self.sentence.id,
         }
 

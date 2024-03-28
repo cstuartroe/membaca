@@ -19,3 +19,6 @@ class Word(models.Model):
     word = models.CharField(max_length=64)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
     lemma = models.ForeignKey(Lemma, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Form {self.word} of lemma {self.lemma}"

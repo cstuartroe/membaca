@@ -17,6 +17,7 @@ export type Language = {
 }
 
 export type Lemma = {
+  id: number,
   language_id: number,
   citation_form: string,
   translation: string,
@@ -44,6 +45,6 @@ export type Substring = {
 export type WordInSentence = {
   id: number,
   sentence_id: number,
-  lemma_id: number,
+  lemma_id: number | null,
   substrings: Substring[],
 }
