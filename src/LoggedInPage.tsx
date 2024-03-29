@@ -16,12 +16,14 @@ type Props = {
 }
 
 type State = {
+    user_menu_expanded: boolean,
 }
 
 export default class LoggedInPage extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
+            user_menu_expanded: false,
         };
     }
 
@@ -35,18 +37,11 @@ export default class LoggedInPage extends Component<Props, State> {
         return (
             <div className="col-12 header">
                 <div className="row">
-                    <div className="col-2" style={{textAlign: "left"}}>
+                    <div className="col-4" style={{textAlign: "left"}}>
                         {user_state.current_language ? (
-                            <h2>
-                                Learning {user_state.current_language.name}
-                            </h2>
-                        ) : null}
-                    </div>
-                    <div className="col-2" style={{textAlign: "left"}}>
-                        {this.props.user_state.current_language ? (
                             <Link to="/choose_language">
                                 <div className="big button">
-                                    Switch language
+                                    Learning {user_state.current_language.name}
                                 </div>
                             </Link>
                         ) : null}
@@ -58,15 +53,26 @@ export default class LoggedInPage extends Component<Props, State> {
                             </h2>
                         </Link>
                     </div>
-                    <div className="col-2" style={{textAlign: "center"}}>
-                        <h2>
+                    <div className="col-4" style={{textAlign: "center", position: "relative"}}>
+                        <div className="big button"
+                             onClick={() => this.setState({user_menu_expanded: !this.state.user_menu_expanded})}
+                        >
                             {user_state.user.username}
-                        </h2>
-                    </div>
-                    <div className="col-2" style={{textAlign: "right"}}>
-                        <div className="big button" onClick={() => this.logOut()}>
-                            Log out
                         </div>
+                        {this.state.user_menu_expanded && (
+                            <div className="user-menu">
+                                {user_state.user.is_superuser && (
+                                    <a href="/admin_powers">
+                                        <div className="big button">
+                                            Use your admin powers!
+                                        </div>
+                                    </a>
+                                )}
+                                <div className="big button" onClick={() => this.logOut()}>
+                                    Log out
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

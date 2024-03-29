@@ -4,6 +4,10 @@ $light_grey: #ddd;
 $light_green: #ddffdd;
 $light_yellow: #ffffaa;
 
+$bootstrap_padding: 15px;
+
+$border: 1px solid $dark_grey;
+
 h2, .button, .label {
   font-family: "Madimi One", sans-serif;
   color: $dark_grey;
@@ -12,6 +16,20 @@ h2, .button, .label {
 input, textarea, p, .document-sentence, .document-translation {
   font-family: "Noto Sans", sans-serif;
   color: black;
+}
+
+.header {
+  padding-bottom: 1vw;
+}
+
+.user-menu {
+  position: absolute;
+  clear: both;
+  width: 100%;
+  //border: $border;
+  z-index: 1;
+  padding: 0 $bootstrap_padding;
+  margin-left: -$bootstrap_padding;
 }
 
 $document_font_size: 1.75vh;
@@ -36,12 +54,13 @@ a {
 
 .button {
   text-align: center;
-  border: 2px solid $dark_grey;
+  border: $border;
   border-radius: 10px;
+  background-color: white;
+  cursor: pointer;
 
   &:hover {
     background-color: $light_green;
-    cursor: pointer;
   }
 }
 
@@ -101,7 +120,7 @@ $sentence_checkbox_width: 2vh;
     left: 0;
     padding: 5px;
     border-radius: 3px;
-    border: 1px solid $dark_grey;
+    border: $border;
     background-color: white;
     z-index: 1;
     display: flex;

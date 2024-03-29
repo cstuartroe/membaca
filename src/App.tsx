@@ -13,6 +13,7 @@ import AddDocument from "./AddDocument";
 import Document from "./Document";
 import Documents from "./Documents";
 import {Language, User} from "./models";
+import AdminPowers from "./AdminPowers";
 
 type AppState = {
     user_state?: {
@@ -73,6 +74,10 @@ class App extends Component<{}, AppState> {
             {
                 path: "/documents",
                 element: <Documents language={current_language}/>,
+            },
+            {
+                path: "/admin_powers",
+                element: <AdminPowers user={user}/>
             },
             {
                 path: "*",
