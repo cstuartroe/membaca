@@ -36,11 +36,11 @@ class SearchLemmasView(View):
     @logged_in
     def get(self, request: HttpRequest):
         language_id = request.GET.get("language_id")
-        search_string = request.GET.get("q")
+        search_string = request.GET.get("q").lower()
         num_results = int(request.GET.get("num_results", 5))
 
         words_and_edit_distance: list[tuple[str, float]] = [
-            (word, levenshtein(search_string, word.word))
+            (word, levenshtein(search_string, word.word.lower()))
             for word in Word.objects.filter(language_id=language_id)
         ]
         words_and_edit_distance.sort(key=lambda pair: pair[1])
