@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from django.core import validators
 from django.utils.translation import gettext_lazy as _
@@ -26,8 +27,8 @@ class Trial(models.Model):
     time_created = models.DateTimeField()
     lemma_add = models.ForeignKey(LemmaAdd, on_delete=models.CASCADE)
     trial_type = models.CharField(max_length=2, choices=TrialType.choices)
-    sentence = models.ForeignKey(Sentence, null=True, on_delete=models.CASCADE)
-    choices = models.CharField(max_length=256)
+    sentence = models.ForeignKey(Sentence, null=True, blank=True, on_delete=models.CASCADE)
+    choices = models.CharField(max_length=256, blank=True)
     correct = models.BooleanField()
     easiness = models.IntegerField(
         validators=[
@@ -38,3 +39,6 @@ class Trial(models.Model):
 
     def __str__(self):
         return f"{self.lemma_add} on {self.time_created}"
+
+    def due_date(self) -> datetime.date:
+        return (self.time_created + datetime.timedelta(days=EASINESS_DAYS[self.easiness])).date()

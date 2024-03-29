@@ -13,6 +13,7 @@ from .views.sentence_add import SentenceAddView
 from .views.word_in_sentence import WordInSentenceView
 from .views.search_lemmas import SearchLemmasView
 from .views.lemma import LemmaView
+from .views.playing_lemmas import PlayingLemmasView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -21,11 +22,7 @@ urlpatterns = [
         include("django_google_sso.urls", namespace="django_google_sso")
     ),
 
-    path(
-        "api/current_user_state",
-        CurrentUserStateView.as_view(),
-        name="current_user_state",
-    ),
+    path("api/current_user_state", CurrentUserStateView.as_view(), name="current_user_state"),
     path("api/choose_language", ChooseLanguageView.as_view(), name="choose_language"),
     path("api/languages", LanguagesView.as_view(), name="languages"),
     path("api/submit_document", SubmitDocumentView.as_view(), name="submit_document"),
@@ -36,6 +33,7 @@ urlpatterns = [
     path("api/words_in_sentence", WordInSentenceView.as_view(), name="words_in_sentence"),
     path("api/search_lemmas", SearchLemmasView.as_view(), name="search_lemmas"),
     path("api/lemma", LemmaView.as_view(), name="lemma"),
+    path("api/playing_lemmas", PlayingLemmasView.as_view(), name="playing_lemmas"),
 
     re_path(r'^.*$', ReactIndexView.as_view(), name="react_index")
 ]

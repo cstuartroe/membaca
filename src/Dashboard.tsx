@@ -15,6 +15,10 @@ export default class Dashboard extends Component<Props, State> {
         };
     }
 
+    componentDidMount() {
+        fetch("/api/playing_lemmas")
+    }
+
 
     render() {
         return (
