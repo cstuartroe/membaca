@@ -54,6 +54,20 @@ h2 {
 }
 
 
+$sentence_checkbox_width: 2vh;
+
+
+.sentence-checkbox {
+  display: inline-block;
+  width: $sentence_checkbox_width;
+}
+
+
+.document-translation {
+  padding-right: $sentence_checkbox_width;
+}
+
+
 .sentence_word {
   cursor: pointer;
 

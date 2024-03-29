@@ -72,27 +72,7 @@ def create_word_in_sentence(data: dict):
         word.save()
 
 
-class WordsInSentenceView(View):
-    @logged_in
-    def get(self, _request: HttpRequest):
-        sentence_id = _request.GET.get("sentence_id")
-
-        words = WordInSentence.objects.filter(sentence__id=sentence_id).prefetch_related('substrings')
-
-        return JsonResponse(
-            data=[
-                {
-                    **word.to_json(),
-                    "substrings": [
-                        substring.to_json()
-                        for substring in word.substrings.all()
-                    ],
-                }
-                for word in words
-            ],
-            safe=False,
-        )
-
+class WordInSentenceView(View):
     @admin_only
     @parse_post
     def post(self, _request: HttpRequest, post_data):

@@ -8,7 +8,9 @@ from .views.choose_language import ChooseLanguageView
 from .views.submit_document import SubmitDocumentView
 from .views.document import DocumentView
 from .views.documents import DocumentsView
-from .views.words_in_sentence import WordsInSentenceView
+from .views.sentence import SentenceView
+from .views.sentence_add import SentenceAddView
+from .views.word_in_sentence import WordInSentenceView
 from .views.search_lemmas import SearchLemmasView
 from .views.lemma import LemmaView
 
@@ -29,7 +31,9 @@ urlpatterns = [
     path("api/submit_document", SubmitDocumentView.as_view(), name="submit_document"),
     path("api/document/<int:document_id>", DocumentView.as_view(), name="document"),
     path("api/documents", DocumentsView.as_view(), name="document"),
-    path("api/words_in_sentence", WordsInSentenceView.as_view(), name="words_in_sentence"),
+    path("api/sentence/<int:sentence_id>", SentenceView.as_view(), name="sentence"),
+    path("api/sentence_add", SentenceAddView.as_view(), name="sentence_add"),
+    path("api/words_in_sentence", WordInSentenceView.as_view(), name="words_in_sentence"),
     path("api/search_lemmas", SearchLemmasView.as_view(), name="search_lemmas"),
     path("api/lemma", LemmaView.as_view(), name="lemma"),
 

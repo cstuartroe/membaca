@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { useParams } from "react-router-dom";
 const classNames = require('classnames');
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import {Sentence, WordInSentence, Substring, Lemma, Language} from "./models";
 import {safePost} from "./ajax_utils";
 
@@ -242,6 +244,7 @@ type AssignedSubstring = {
 }
 
 type DocumentSentenceState = {
+    added: boolean,
     fetched_words: WordInSentence[],
     assigning_substrings: Substring[],
     selection_start_substring?: number,
@@ -255,19 +258,29 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
     constructor(props: DocumentSentenceProps) {
         super(props);
         this.state = {
+            added: false,
             fetched_words: [],
             assigning_substrings: [],
         };
     }
 
     loadSentence() {
-        fetch(`/api/words_in_sentence?sentence_id=${this.props.sentence.id}`)
+        fetch(`/api/sentence/${this.props.sentence.id}`)
             .then(res => res.json())
-            .then(words => this.setState({
-                fetched_words: words,
+            .then(data => this.setState({
+                added: data.added,
+                fetched_words: data.words,
                 assigning_substrings: [],
                 focused: undefined,
             }));
+    }
+
+    add() {
+        safePost(
+            "/api/sentence_add",
+            {sentence_id: this.props.sentence.id},
+        )
+            .then(() => this.loadSentence());
     }
 
     componentDidMount() {
@@ -368,13 +381,13 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
         return [words, substrings];
     }
 
-    render() {
+    substringElements() {
         const { language } = this.props;
         const { text } = this.props.sentence;
         const { focused } = this.state;
         const [words, substrings] = this.deriveWordsAndSubstrings();
 
-        const paragraphChildren = substrings.map((assigned_substring, i) => {
+        return substrings.map((assigned_substring, i) => {
             const substring_text = text.substring(assigned_substring.substring.start, assigned_substring.substring.end);
             const substring_focused = focused?.word_index === assigned_substring.word_index;
             const substring_expanded = substring_focused && !!focused?.expanded;
@@ -479,8 +492,26 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                 }
             }
         });
+    }
 
-        return <div className="document-sentence">{paragraphChildren}</div>;
+    checkBox() {
+        return <div className="sentence-checkbox">
+            {this.state.added ? (
+                <FontAwesomeIcon icon={faCheck}/>
+            ) : (
+                <input
+                    type="checkbox"
+                    onClick={() => this.add()}
+                />
+            )}
+        </div>;
+    }
+
+    render() {
+        return <div className="document-sentence">
+            {this.checkBox()}
+            {this.substringElements()}
+        </div>;
     }
 }
 
