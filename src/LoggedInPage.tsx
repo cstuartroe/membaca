@@ -55,6 +55,7 @@ export default class LoggedInPage extends Component<Props, State> {
                     </div>
                     <div className="col-4" style={{textAlign: "center", position: "relative"}}>
                         <div className="big button"
+                             style={this.state.user_menu_expanded ? {borderRadius: "10px 10px 0 0"} : {}}
                              onClick={() => this.setState({user_menu_expanded: !this.state.user_menu_expanded})}
                         >
                             {user_state.user.username}
@@ -63,12 +64,16 @@ export default class LoggedInPage extends Component<Props, State> {
                             <div className="user-menu">
                                 {user_state.user.is_superuser && (
                                     <a href="/admin_powers">
-                                        <div className="big button">
+                                        <div className="big button" style={{borderRadius: 0}}>
                                             Use your admin powers!
                                         </div>
                                     </a>
                                 )}
-                                <div className="big button" onClick={() => this.logOut()}>
+                                <div
+                                    className="big button"
+                                    style={{borderRadius: "0 0 10px 10px"}}
+                                    onClick={() => this.logOut()}
+                                >
                                     Log out
                                 </div>
                             </div>
