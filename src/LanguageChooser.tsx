@@ -55,7 +55,7 @@ export default class LanguageChooser extends Component<Props, State> {
                 <h2>What language would you like to learn?</h2>
 
                 {this.state.choices.map((l: Language) => (
-                    <div className="button" onClick={() => this.chooseLanguage(l)} key={l.name}>
+                    <div className="big button" onClick={() => this.chooseLanguage(l)} key={l.name}>
                         {l.name}
                     </div>
                 ))}
