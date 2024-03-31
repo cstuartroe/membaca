@@ -62,7 +62,7 @@ class App extends Component<{}, AppState> {
             },
             {
                 path: "/dashboard",
-                element: <Dashboard is_superuser={user.is_superuser}/>,
+                element: <Dashboard is_superuser={user.is_superuser} current_language={current_language}/>,
             },
             {
                 path: "/add_document",

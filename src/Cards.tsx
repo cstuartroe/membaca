@@ -212,7 +212,7 @@ export default class Cards extends Component<Props, State> {
 
     componentDidMount() {
         const url = this.props.new ? "/api/cards/new" : "/api/cards/review";
-        fetch(url)
+        fetch(`${url}?language_id=${this.props.language.id}`)
             .then(res => res.json())
             .then(data => this.setState({
                 lemmas_by_id: data.lemmas_by_id,

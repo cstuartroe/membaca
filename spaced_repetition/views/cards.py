@@ -62,10 +62,10 @@ class CardSet:
 class CardsView(View):
     @logged_in
     def get(self, request: HttpRequest):
-        card_set = self.get_cards(request.user)
+        card_set = self.get_cards(request.user, request.GET.get("language_id"))
         return JsonResponse(card_set.to_json())
 
-    def get_cards(self, user: User) -> CardSet:
+    def get_cards(self, user: User, language_id: int) -> CardSet:
         raise NotImplemented
 
 
@@ -125,10 +125,10 @@ def get_cloze_card(lemma: Lemma, recommended_easiness: int, playing_lemmas: list
 
 class NewCardsView(CardsView):
     @transaction.atomic
-    def get_cards(self, user: User) -> CardSet:
-        all_lemmas = list(Lemma.objects.all())
+    def get_cards(self, user: User, language_id: int) -> CardSet:
+        all_lemmas = list(Lemma.objects.filter(language_id=language_id))
 
-        playing_lemmas = get_playing_lemmas(user)
+        playing_lemmas = get_playing_lemmas(user, language_id)
         new_lemmas = [
             lemma_info
             for lemma_info in playing_lemmas
@@ -176,11 +176,11 @@ TRIAL_TYPE_CYCLE = {
 
 class ReviewCardsView(CardsView):
     @transaction.atomic
-    def get_cards(self, user: User) -> CardSet:
-        all_lemmas = list(Lemma.objects.all())
+    def get_cards(self, user: User, language_id: int) -> CardSet:
+        all_lemmas = list(Lemma.objects.filter(language_id=language_id))
         today = datetime.date.today()
 
-        playing_lemmas = get_playing_lemmas(user)
+        playing_lemmas = get_playing_lemmas(user, language_id)
         review_lemmas = [
             lemma_info
             for lemma_info in playing_lemmas

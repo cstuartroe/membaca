@@ -19,10 +19,10 @@ class PlayingLemmaInfo:
 
 
 @transaction.atomic
-def get_playing_lemmas(user: User) -> list[PlayingLemmaInfo]:
+def get_playing_lemmas(user: User, language_id: int) -> list[PlayingLemmaInfo]:
     playing_lemma_info: dict[int, PlayingLemmaInfo] = {}
 
-    lemma_adds = LemmaAdd.objects.filter(user_id=user.id).select_related('lemma')
+    lemma_adds = LemmaAdd.objects.select_related('lemma').filter(lemma__language_id=language_id, user_id=user.id)
     for lemma_add in lemma_adds:
         playing_lemma_info[lemma_add.lemma_id] = PlayingLemmaInfo(
             lemma=lemma_add.lemma,
@@ -30,7 +30,8 @@ def get_playing_lemmas(user: User) -> list[PlayingLemmaInfo]:
             last_trial=None,
         )
 
-    trials = Trial.objects.select_related('lemma_add').filter(lemma_add__user_id=user.id).order_by('time_created')
+    trials = (Trial.objects.select_related('lemma_add').select_related('lemma_add__lemma')
+              .filter(lemma_add__lemma__language_id=language_id, lemma_add__user_id=user.id).order_by('time_created'))
     for trial in trials:
         if trial.lemma_add.lemma_id not in playing_lemma_info:
             raise ValueError
@@ -44,7 +45,8 @@ def get_playing_lemmas(user: User) -> list[PlayingLemmaInfo]:
 class PlayingLemmasView(View):
     @logged_in
     def get(self, request: HttpRequest):
-        playing_lemma_info = get_playing_lemmas(request.user)
+        language_id = request.GET.get("language_id")
+        playing_lemma_info = get_playing_lemmas(request.user, language_id)
 
         return JsonResponse(
             data=[

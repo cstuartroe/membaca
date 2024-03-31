@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import {Link, Navigate} from "react-router-dom";
-import {CardDescriptor} from "./models";
+import {Link} from "react-router-dom";
+import {CardDescriptor, Language} from "./models";
 
 type Props = {
     is_superuser: boolean,
+    current_language: Language,
 }
 
 type State = {
@@ -18,7 +19,7 @@ export default class Dashboard extends Component<Props, State> {
     }
 
     componentDidMount() {
-        fetch("/api/playing_lemmas")
+        fetch(`/api/playing_lemmas?language_id=${this.props.current_language.id}`)
             .then(res => res.json())
             .then(data => this.setState({card_descriptors: data.map((descriptor: any) => ({
                     ...descriptor,
