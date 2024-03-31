@@ -16,6 +16,11 @@ class WordInSentence(models.Model):
             "sentence_id": self.sentence.id,
         }
 
+    def slash_separated_string(self):
+        substrings = list(self.substrings.all())
+        substrings.sort(key=lambda s: s.start)
+        return ' / '.join(self.sentence.text[s.start:s.end] for s in substrings)
+
 
 class Substring(models.Model):
     start = models.IntegerField()

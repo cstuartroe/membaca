@@ -44,3 +44,16 @@ export type WordInSentence = {
   lemma_id: number | null,
   substrings: Substring[],
 }
+
+export type TrialType = "ct" | "cc" | "cz" | "show";
+
+type Trial = {
+  trial_type: TrialType,
+  easiness: number,
+}
+
+export type CardDescriptor = {
+  lemma_id: number,
+  due_date: Date,
+  last_trial: null | Trial,
+}

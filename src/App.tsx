@@ -14,6 +14,7 @@ import Document from "./Document";
 import Documents from "./Documents";
 import {Language, User} from "./models";
 import AdminPowers from "./AdminPowers";
+import Cards from "./Cards";
 
 type AppState = {
     user_state?: {
@@ -78,6 +79,14 @@ class App extends Component<{}, AppState> {
             {
                 path: "/admin_powers",
                 element: <AdminPowers user={user}/>
+            },
+            {
+                path: "/cards/new",
+                element: <Cards user={user} language={current_language} new={true}/>
+            },
+            {
+                path: "/cards/review",
+                element: <Cards user={user} language={current_language} new={false}/>
             },
             {
                 path: "*",

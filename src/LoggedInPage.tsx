@@ -55,7 +55,7 @@ export default class LoggedInPage extends Component<Props, State> {
                     </div>
                     <div className="col-4" style={{textAlign: "center", position: "relative"}}>
                         <div className="big button"
-                             style={this.state.user_menu_expanded ? {borderRadius: "10px 10px 0 0"} : {}}
+                             style={this.state.user_menu_expanded ? {borderRadius: "10px 10px 0 0", marginBottom: 0} : {}}
                              onClick={() => this.setState({user_menu_expanded: !this.state.user_menu_expanded})}
                         >
                             {user_state.user.username}

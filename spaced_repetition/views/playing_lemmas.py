@@ -3,49 +3,57 @@ from dataclasses import dataclass
 from typing import Optional
 from django.views import View
 from django.http import HttpRequest, JsonResponse
+from django.db import transaction
 from .ajax_utils import logged_in
+from spaced_repetition.models.user import User
+from spaced_repetition.models.lemma import Lemma
 from spaced_repetition.models.lemma_add import LemmaAdd
 from spaced_repetition.models.trial import Trial
 
 
 @dataclass
 class PlayingLemmaInfo:
-    easiness: int
-    due_date: datetime.date
-    last_trial_type: Optional[str]
+    lemma: Lemma
+    last_trial: Optional[Trial]
+    due_date: datetime.datetime
 
-    def to_json(self):
-        return {
-            "easiness": self.easiness,
-            "due_date": self.due_date.strftime("%Y-%m-%d"),
-            "last_trial_type": self.last_trial_type,
-        }
+
+@transaction.atomic
+def get_playing_lemmas(user: User) -> list[PlayingLemmaInfo]:
+    playing_lemma_info: dict[int, PlayingLemmaInfo] = {}
+
+    lemma_adds = LemmaAdd.objects.filter(user_id=user.id).select_related('lemma')
+    for lemma_add in lemma_adds:
+        playing_lemma_info[lemma_add.lemma_id] = PlayingLemmaInfo(
+            lemma=lemma_add.lemma,
+            due_date=lemma_add.time_created.date(),
+            last_trial=None,
+        )
+
+    trials = Trial.objects.select_related('lemma_add').filter(lemma_add__user_id=user.id).order_by('time_created')
+    for trial in trials:
+        if trial.lemma_add.lemma_id not in playing_lemma_info:
+            raise ValueError
+
+        playing_lemma_info[trial.lemma_add.lemma_id].due_date = trial.due_date()
+        playing_lemma_info[trial.lemma_add.lemma_id].last_trial = trial
+
+    return list(playing_lemma_info.values())
 
 
 class PlayingLemmasView(View):
     @logged_in
     def get(self, request: HttpRequest):
-        today = datetime.date.today()
-        playing_lemma_info: dict[int, PlayingLemmaInfo] = {}
-
-        lemma_adds = LemmaAdd.objects.filter(user_id=request.user.id)
-        for lemma_add in lemma_adds:
-            playing_lemma_info[lemma_add.lemma_id] = PlayingLemmaInfo(0, today, None)
-
-        trials = Trial.objects.select_related('lemma_add').filter(lemma_add__user_id=request.user.id).order_by('time_created')
-        for trial in trials:
-            if trial.lemma_add.lemma_id not in playing_lemma_info:
-                raise ValueError
-
-            playing_lemma_info[trial.lemma_add.lemma_id] = PlayingLemmaInfo(trial.easiness, trial.due_date(), trial.trial_type)
+        playing_lemma_info = get_playing_lemmas(request.user)
 
         return JsonResponse(
             data=[
                 {
-                    "lemma_id": lemma_id,
-                    **info.to_json(),
+                    "lemma_id": info.lemma.id,
+                    "last_trial": info.last_trial and info.last_trial.to_json(),
+                    "due_date": info.due_date.strftime("%Y-%m-%d"),
                 }
-                for lemma_id, info in playing_lemma_info.items()
+                for info in playing_lemma_info
             ],
             safe=False,
         )

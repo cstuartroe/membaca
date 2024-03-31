@@ -28,7 +28,8 @@ class Trial(models.Model):
     lemma_add = models.ForeignKey(LemmaAdd, on_delete=models.CASCADE)
     trial_type = models.CharField(max_length=2, choices=TrialType.choices)
     sentence = models.ForeignKey(Sentence, null=True, blank=True, on_delete=models.CASCADE)
-    choices = models.CharField(max_length=256, blank=True)
+    choices = models.CharField(max_length=256)
+    choice = models.CharField(max_length=128)
     correct = models.BooleanField()
     easiness = models.IntegerField(
         validators=[
@@ -42,3 +43,10 @@ class Trial(models.Model):
 
     def due_date(self) -> datetime.date:
         return (self.time_created + datetime.timedelta(days=EASINESS_DAYS[self.easiness])).date()
+
+    def to_json(self):
+        return {
+            # Skipping a bunch of fields because PlayingLemmaViews only needs these
+            "trial_type": self.trial_type,
+            "easiness": self.easiness,
+        }

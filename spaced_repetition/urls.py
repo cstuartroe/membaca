@@ -14,6 +14,8 @@ from .views.word_in_sentence import WordInSentenceView
 from .views.search_lemmas import SearchLemmasView
 from .views.lemma import LemmaView
 from .views.playing_lemmas import PlayingLemmasView
+from .views.cards import NewCardsView, ReviewCardsView
+from .views.trial import TrialView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,6 +36,9 @@ urlpatterns = [
     path("api/search_lemmas", SearchLemmasView.as_view(), name="search_lemmas"),
     path("api/lemma", LemmaView.as_view(), name="lemma"),
     path("api/playing_lemmas", PlayingLemmasView.as_view(), name="playing_lemmas"),
+    path("api/cards/new", NewCardsView.as_view(), name="new_cards"),
+    path("api/cards/review", ReviewCardsView.as_view(), name="review_cards"),
+    path("api/trial", TrialView.as_view(), name="trial"),
 
     re_path(r'^.*$', ReactIndexView.as_view(), name="react_index")
 ]
