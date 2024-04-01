@@ -71,11 +71,22 @@ WSGI_APPLICATION = 'spaced_repetition.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
+DEV_SQLITE = {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': "db.sqlite3",
+}
+
+PROD_PG = {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': os.getenv("PG_DB"),
+    'USER': os.getenv("PG_USER"),
+    'PASSWORD': os.getenv("PG_PASSWORD"),
+    'HOST': os.getenv("PG_HOST"),
+    'PORT': '5432',
+}
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': "db.sqlite3",
-    }
+    'default': DEV_SQLITE if DEBUG else PROD_PG
 }
 
 
