@@ -64,3 +64,14 @@ export type CardDescriptor = {
   due_date: Date,
   last_trial: null | Trial,
 }
+
+export const EASINESS_DAYS = [
+  0,
+  1,
+  2,
+  4,
+  10,
+  30,
+  90,
+  365,
+];

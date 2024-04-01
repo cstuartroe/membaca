@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {Language, Lemma, Sentence, Substring, TrialType, User} from "./models";
+import {Language, Lemma, Sentence, Substring, EASINESS_DAYS, User} from "./models";
 import {safePost} from "./ajax_utils";
 import classNames from "classnames";
 
@@ -18,17 +18,6 @@ function shuffle<T>(array: T[]) {
             array[randomIndex], array[currentIndex]];
     }
 }
-
-const EASINESS_DAYS = [
-    0,
-    1,
-    2,
-    4,
-    10,
-    30,
-    90,
-    365,
-]
 
 type ClozeInfo = {
     sentence: Sentence,
