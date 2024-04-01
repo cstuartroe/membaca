@@ -1,5 +1,7 @@
 asgiref==3.8.0
 asttokens==2.4.1
+beautifulsoup4==4.12.3
+bs4==0.0.2
 cachetools==5.3.3
 certifi==2024.2.2
 charset-normalizer==3.3.2
@@ -42,8 +44,10 @@ requests==2.31.0
 requests-oauthlib==1.4.0
 rsa==4.9
 six==1.16.0
+soupsieve==2.5
 sqlparse==0.4.1
 stack-data==0.6.3
+tqdm==4.66.2
 traitlets==5.14.2
 typing_extensions==4.10.0
 urllib3==2.2.1
