@@ -5,8 +5,8 @@ from .document import Document
 class Sentence(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     position = models.IntegerField()
-    text = models.CharField(max_length=256)
-    translation = models.CharField(max_length=256)
+    text = models.TextField()
+    translation = models.TextField()
     # URL to an image that will be displayed above the sentence
     image = models.CharField(max_length=256, blank=True)
 
