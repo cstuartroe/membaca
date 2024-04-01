@@ -1,4 +1,5 @@
 from django.contrib import admin
+from spaced_repetition.models.collection import Collection
 from spaced_repetition.models.document import Document
 from spaced_repetition.models.language import Language
 from spaced_repetition.models.lemma import Lemma
@@ -11,6 +12,7 @@ from spaced_repetition.models.word_in_sentence import WordInSentence, Substring
 from spaced_repetition.models.word import Word
 
 
+admin.site.register(Collection)
 admin.site.register(Document)
 admin.site.register(Language)
 admin.site.register(Lemma)

@@ -8,7 +8,7 @@ from spaced_repetition.models.document import Document
 class DocumentsView(View):
     @logged_in
     def get(self, request: HttpRequest):
-        documents = Document.objects.filter(language__id=request.GET["language_id"]).order_by("id").all()
+        documents = Document.objects.filter(collection_id=request.GET["collection_id"]).order_by("order").all()
 
         return JsonResponse([
             document.to_json()

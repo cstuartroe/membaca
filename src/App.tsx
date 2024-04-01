@@ -11,10 +11,11 @@ import Dashboard from "./Dashboard";
 import LoggedInPage from "./LoggedInPage";
 import AddDocument from "./AddDocument";
 import Document from "./Document";
-import Documents from "./Documents";
+import Collections from "./Collections";
 import {Language, User} from "./models";
 import AdminPowers from "./AdminPowers";
 import Cards from "./Cards";
+import Collection from "./Collection";
 
 type AppState = {
     user_state?: {
@@ -73,8 +74,12 @@ class App extends Component<{}, AppState> {
                 element: <Document language={current_language}/>,
             },
             {
-                path: "/documents",
-                element: <Documents language={current_language}/>,
+                path: "/collections",
+                element: <Collections language={current_language}/>,
+            },
+            {
+                path: "/collection/:collectionId",
+                element: <Collection/>,
             },
             {
                 path: "/admin_powers",

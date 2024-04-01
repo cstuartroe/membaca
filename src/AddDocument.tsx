@@ -1,7 +1,7 @@
 import React, { Component, useState } from "react";
 import {Navigate} from "react-router-dom";
 import {safePost} from "./ajax_utils";
-import {Language} from "./models";
+import {Collection, Language} from "./models";
 
 
 type TextBoxProps = {
@@ -60,6 +60,7 @@ function SentencesOrTranslationRows(props: SentencesOrTranslationRowsProps) {
     } else {
         return strings.map((text, i) => (
             <TextBox
+                key={i}
                 text={text}
                 offset={false}
                 update={s => {
@@ -80,6 +81,8 @@ type Props = {
 type State = {
     title: string,
     link: string,
+    collections: Collection[],
+    collection_id?: number,
     sentences?: string[],
     translations?: string[],
     documentId?: number,
@@ -112,14 +115,21 @@ export default class AddDocument extends Component<Props, State> {
         this.state = {
             title: "",
             link: "",
+            collections: [],
         };
+    }
+
+    componentDidMount() {
+        fetch(`/api/collections?language_id=${this.props.language.id}`)
+            .then(res => res.json())
+            .then(collections => this.setState({collections}))
     }
 
     submit() {
         safePost(
             "/api/submit_document",
             {
-                language: this.props.language.id,
+                collection_id: this.state.collection_id,
                 title: this.state.title,
                 link: this.state.link,
                 sentences: this.state.sentences,
@@ -167,7 +177,7 @@ export default class AddDocument extends Component<Props, State> {
 
     sentenceBox(text: string, i: number) {
         return (
-            <div className="col-6">
+            <div className="col-6" key="sentence">
                 <TextBox
                     text={text}
                     offset={false}
@@ -180,7 +190,7 @@ export default class AddDocument extends Component<Props, State> {
 
     translationBox(text: string, i: number, offset: boolean) {
         return (
-            <div className={`col-6 ${offset ? "offset-6" : ""}`}>
+            <div className={`col-6 ${offset ? "offset-6" : ""}`} key="translation">
                 <TextBox
                     text={text}
                     offset={false}
@@ -203,7 +213,7 @@ export default class AddDocument extends Component<Props, State> {
                 boxes.push(this.translationBox(translations[i], i, sentences.length <= i));
             }
             rows.push(
-                <div className="col-12">
+                <div className="col-12" key={i}>
                     <div className="row">
                         {boxes}
                     </div>
@@ -262,6 +272,17 @@ export default class AddDocument extends Component<Props, State> {
                         style={{textAlign: "center", width: "100%"}}
                         value={this.state.title}
                         onChange={e => this.setState({title: e.target.value})}/>
+                    <h2>Collection</h2>
+                    <select
+                        value={this.state.collection_id}
+                        onChange={e => this.setState({
+                            collection_id: Number.parseInt(e.target.value),
+                        })}
+                    >
+                        {this.state.collections.map(collection => (
+                            <option value={collection.id} key={collection.id}>{collection.title}</option>
+                        ))}
+                    </select>
                     <h2>Link</h2>
                     <input
                         type="text"

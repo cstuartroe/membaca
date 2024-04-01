@@ -1,16 +1,17 @@
 import React, { Component } from "react";
-import {Link} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import {Document, Language} from "./models";
 
 type Props = {
-    language: Language,
+    collection_id: number,
 }
 
 type State = {
     documents?: Document[],
 }
 
-export default class Documents extends Component<Props, State> {
+
+class _Collection extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
@@ -21,14 +22,8 @@ export default class Documents extends Component<Props, State> {
         this.fetchDocuments()
     }
 
-    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
-        if (prevProps.language !== this.props.language) {
-            this.fetchDocuments();
-        }
-    }
-
     fetchDocuments() {
-        fetch(`/api/documents?language_id=${this.props.language.id}`)
+        fetch(`/api/documents?collection_id=${this.props.collection_id}`)
             .then(res => res.json())
             .then(data => this.setState({
                 documents: data,
@@ -54,3 +49,12 @@ export default class Documents extends Component<Props, State> {
     }
 }
 
+export default function Collection(props: {}) {
+    const { collectionId } = useParams();
+
+    if (collectionId === undefined) {
+        return null;
+    }
+
+    return <_Collection collection_id={parseInt(collectionId)}/>
+}

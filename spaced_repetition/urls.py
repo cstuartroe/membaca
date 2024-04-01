@@ -8,6 +8,7 @@ from .views.choose_language import ChooseLanguageView
 from .views.submit_document import SubmitDocumentView
 from .views.document import DocumentView
 from .views.documents import DocumentsView
+from .views.collections import CollectionsView
 from .views.sentence import SentenceView
 from .views.sentence_add import SentenceAddView
 from .views.word_in_sentence import WordInSentenceView
@@ -29,7 +30,8 @@ urlpatterns = [
     path("api/languages", LanguagesView.as_view(), name="languages"),
     path("api/submit_document", SubmitDocumentView.as_view(), name="submit_document"),
     path("api/document/<int:document_id>", DocumentView.as_view(), name="document"),
-    path("api/documents", DocumentsView.as_view(), name="document"),
+    path("api/documents", DocumentsView.as_view(), name="documents"),
+    path("api/collections", CollectionsView.as_view(), name="collections"),
     path("api/sentence/<int:sentence_id>", SentenceView.as_view(), name="sentence"),
     path("api/sentence_add", SentenceAddView.as_view(), name="sentence_add"),
     path("api/words_in_sentence", WordInSentenceView.as_view(), name="words_in_sentence"),

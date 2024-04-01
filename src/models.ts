@@ -19,11 +19,17 @@ export type Lemma = {
   translation: string,
 }
 
+export type Collection = {
+  id: number,
+  title: string,
+  language_id: number,
+}
+
 export type Document = {
   id: number,
   title: string,
   link: string,
-  language: number,
+  collection_id: number,
   sentences?: Sentence[],
 }
 
