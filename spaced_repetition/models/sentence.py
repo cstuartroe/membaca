@@ -7,6 +7,8 @@ class Sentence(models.Model):
     position = models.IntegerField()
     text = models.CharField(max_length=256)
     translation = models.CharField(max_length=256)
+    # URL to an image that will be displayed above the sentence
+    image = models.CharField(max_length=256, blank=True)
 
     class Meta:
         constraints = [
@@ -29,4 +31,5 @@ class Sentence(models.Model):
             "id": self.id,
             "text": self.text,
             "translation": self.translation,
+            "image": self.image or None,
         }

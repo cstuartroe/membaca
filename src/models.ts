@@ -37,6 +37,7 @@ export type Sentence = {
   id: number,
   text: string,
   translation: string,
+  image: string | null,
 }
 
 export type Substring = {

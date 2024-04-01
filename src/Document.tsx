@@ -554,6 +554,16 @@ class _Document extends Component<Props, State> {
                 </a>
                 {sentences?.map((sentence, i) => (
                     <div className="row" key={i} style={{paddingBottom: ".5vh"}}>
+                        {(sentence.image !== null ) ? (
+                            <div className="col-12 col-md-8 offset-md-2" style={{display: "flex"}}>
+                                <img src={sentence.image} style={{
+                                    maxWidth: "100%",
+                                    maxHeight: "30vh",
+                                    margin: "auto",
+                                    padding: "10px 0",
+                                }}/>
+                            </div>
+                        ) : null}
                         <div className="col-6 col-md-4 offset-md-2">
                             <DocumentSentence sentence={sentence} language={this.props.language}/>
                         </div>
