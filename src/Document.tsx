@@ -17,6 +17,7 @@ const SKIP_CHARACTERS: string[] = [
     "!",
     "?",
     "\"",
+    "'",
 ];
 
 
