@@ -179,3 +179,22 @@ $sentence_checkbox_width: 2vh;
     padding-bottom: 3vh;
   }
 }
+
+.cards-progress-bar {
+  position: relative;
+
+  .numbers {
+    font-family: "Noto Sans", sans-serif;
+    font-size: $document_font_size;
+    text-align: center;
+  }
+
+  .cards-progress {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: $light_green;
+    z-index: -1;
+  }
+}

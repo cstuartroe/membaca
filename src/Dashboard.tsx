@@ -45,7 +45,7 @@ export default class Dashboard extends Component<Props, State> {
                 <div className="row">
                     <div className="col-12">
                         <p>
-                            {seen_cards.length}/{card_descriptors.length} cards playing.
+                            Learning {seen_cards.length}/{card_descriptors.length} added words.
                             {' '}{due_cards.length} cards ready for review.
                         </p>
                     </div>

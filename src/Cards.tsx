@@ -198,6 +198,7 @@ type State = {
     cards: CardInfo[],
     index: number,
     still_showing_new_lemmas: boolean,
+    trial_results: boolean[],
 }
 
 export default class Cards extends Component<Props, State> {
@@ -207,6 +208,7 @@ export default class Cards extends Component<Props, State> {
             cards: [],
             index: 0,
             still_showing_new_lemmas: props.new,
+            trial_results: [],
         };
     }
 
@@ -221,13 +223,15 @@ export default class Cards extends Component<Props, State> {
     }
 
     advance(correct: boolean, card: CardInfo) {
-        const cards = this.state.cards;
+        const { cards, trial_results } = this.state;
+        trial_results.push(correct);
         if (!correct) {
             cards.push(card);
         }
         this.setState({
             index: this.state.index + 1,
             cards,
+            trial_results,
         })
     }
 
@@ -249,32 +253,28 @@ export default class Cards extends Component<Props, State> {
         lemma_ids.sort()
         const lemma = lemmas_by_id[Number.parseInt(lemma_ids[this.state.index])]
 
-        return (
-            <div className="col-12 col-md-8 offset-md-2 flashcard">
-                <div className="row">
-                    <div className="col-12">
-                        <div className="single-word">{lemma.citation_form}</div>
-                    </div>
-                    <div className="col-12">
-                        <div className="translation">{lemma.translation}</div>
-                    </div>
-                    <div className="col-6 offset-3">
-                        <div
-                            className="big button"
-                            onClick={() => {
-                                if (this.state.index === lemma_ids.length - 1) {
-                                    this.setState({index: 0, still_showing_new_lemmas: false});
-                                } else {
-                                    this.setState({index: this.state.index + 1});
-                                }
-                            }}
-                        >
-                            Next
-                        </div>
-                    </div>
+        return <>
+            <div className="col-12">
+                <div className="single-word">{lemma.citation_form}</div>
+            </div>
+            <div className="col-12">
+                <div className="translation">{lemma.translation}</div>
+            </div>
+            <div className="col-6 offset-3">
+                <div
+                    className="big button"
+                    onClick={() => {
+                        if (this.state.index === lemma_ids.length - 1) {
+                            this.setState({index: 0, still_showing_new_lemmas: false});
+                        } else {
+                            this.setState({index: this.state.index + 1});
+                        }
+                    }}
+                >
+                    Next
                 </div>
             </div>
-        );
+        </>;
     }
 
     flashcard() {
@@ -291,22 +291,18 @@ export default class Cards extends Component<Props, State> {
         const question = choosingTranslation ? lemma.citation_form : lemma.translation;
         const correct_answer = choosingTranslation ? lemma.translation : lemma.citation_form;
 
-        return (
-            <div className="col-12 col-md-8 offset-md-2 flashcard">
-                <div className="row">
-                    <div className="col-12">
-                        <div className={choosingTranslation ? "single-word" : "sentence"}>{question}</div>
-                    </div>
-                    <MultipleChoice
-                        key={Math.random()}
-                        card={card}
-                        correct_answer={correct_answer}
-                        advance={correct => this.advance(correct, card)}
-                        mark_easiness={this.shouldMarkEasiness()}
-                    />
-                </div>
+        return <>
+            <div className="col-12">
+                <div className={choosingTranslation ? "single-word" : "sentence"}>{question}</div>
             </div>
-        );
+            <MultipleChoice
+                key={Math.random()}
+                card={card}
+                correct_answer={correct_answer}
+                advance={correct => this.advance(correct, card)}
+                mark_easiness={this.shouldMarkEasiness()}
+            />
+        </>;
     }
 
     clozeCard(card: ClozeCardInfo) {
@@ -320,37 +316,50 @@ export default class Cards extends Component<Props, State> {
         });
         sentenceWithUnderscores += card.answer.sentence.text.substring(prevEnd);
 
-        return (
-            <div className="col-12 col-md-8 offset-md-2 flashcard">
-                <div className="row">
-                    <div className="col-12">
-                        <div className="sentence">{sentenceWithUnderscores}</div>
-                    </div>
-                    <div className="col-12">
-                        <div className="translation">{card.answer.sentence.translation}</div>
-                    </div>
-                    <MultipleChoice
-                        key={Math.random()}
-                        card={card}
-                        correct_answer={card.answer.slash_separated_word}
-                        advance={correct => this.advance(correct, card)}
-                        mark_easiness={this.shouldMarkEasiness()}
-                    />
-                </div>
+        return <>
+            <div className="col-12">
+                <div className="sentence">{sentenceWithUnderscores}</div>
             </div>
-        );
+            <div className="col-12">
+                <div className="translation">{card.answer.sentence.translation}</div>
+            </div>
+            <MultipleChoice
+                key={Math.random()}
+                card={card}
+                correct_answer={card.answer.slash_separated_word}
+                advance={correct => this.advance(correct, card)}
+                mark_easiness={this.shouldMarkEasiness()}
+            />
+        </>;
     }
 
     summarySlide() {
-        return null;
+        const lemma_ids = [...Object.keys(this.state.lemmas_by_id!)].map(s => Number.parseInt(s));
+        lemma_ids.sort()
+
+        const num_correct = this.state.trial_results.reduce((sum, correct, _) => sum + (correct ? 1 : 0), 0);
+
+        return <>
+            <div className="col-12">
+                <div className="sentence" style={{paddingTop: "15vh"}}>
+                    Great job! {num_correct}/{this.state.trial_results.length}{' '}
+                    ({Math.round(100 * num_correct / this.state.trial_results.length)}%){' '}
+                    correct.
+                </div>
+                <div className="sentence" style={{paddingTop: "5vh"}}>
+                    You {this.props.new ? "started" : "reviewed"} {lemma_ids.length} words:
+                </div>
+                {lemma_ids.map(lemma_id => (
+                    <div className="translation">
+                        <span style={{fontStyle: "italic"}}>{this.state.lemmas_by_id![lemma_id].citation_form}</span>{' '}
+                        "{this.state.lemmas_by_id![lemma_id].translation}"
+                    </div>
+                ))}
+            </div>
+        </>;
     }
 
-
-    render() {
-        if (this.state.lemmas_by_id === undefined) {
-            return null;
-        }
-
+    mainContent() {
         if (this.state.still_showing_new_lemmas) {
             return this.showNewLemma();
         }
@@ -360,5 +369,37 @@ export default class Cards extends Component<Props, State> {
         }
 
         return this.flashcard();
+    }
+
+    progressBar() {
+        const num_lemmas = [...Object.keys(this.state.lemmas_by_id!)].length;
+        const numerator = this.state.index + ((this.props.new && !this.state.still_showing_new_lemmas) ? num_lemmas : 0);
+        const denominator = this.state.cards.length + (this.props.new ? num_lemmas : 0);
+
+        return (
+            <div className="col-12 cards-progress-bar">
+                <div className="numbers">{numerator}/{denominator}</div>
+                <div className="cards-progress" style={{width: `${Math.round(100*numerator/denominator)}%`}}/>
+            </div>
+        );
+    }
+
+
+    render() {
+        if (this.state.lemmas_by_id === undefined) {
+            return null;
+        }
+
+        return (
+            <>
+                {this.progressBar()}
+
+                <div className="col-12 col-md-8 offset-md-2 flashcard">
+                    <div className="row">
+                        {this.mainContent()}
+                    </div>
+                </div>
+            </>
+        );
     }
 }
