@@ -48,6 +48,7 @@ type LemmaDict = {[key: number]: Lemma};
 type MultipleChoiceProps = {
     correct_answer: string,
     card: CardInfo,
+    lemma: Lemma,
     advance: (correct: boolean) => void,
     mark_easiness: boolean,
 }
@@ -149,7 +150,12 @@ class MultipleChoice extends Component<MultipleChoiceProps, MultipleChoiceState>
 
     easinessButtons() {
         return <div className="col-12">
-            <div className="translation">When would you like to see this word next?</div>
+            <div className="translation">
+                When would you like to see this word{' '}
+                <span style={{fontStyle: "italic"}}>{this.props.lemma.citation_form}</span>{' '}
+                "{this.props.lemma.translation}"
+                {' '}next?
+            </div>
             <div className="row">
                 {EASINESS_DAYS.map((days, easiness) => (
                     <div className="col-3" key={easiness}>
@@ -287,6 +293,7 @@ export default class Cards extends Component<Props, State> {
             <MultipleChoice
                 key={Math.random()}
                 card={card}
+                lemma={lemma}
                 correct_answer={correct_answer}
                 advance={correct => this.advance(correct, card)}
                 mark_easiness={this.shouldMarkEasiness()}
@@ -295,6 +302,8 @@ export default class Cards extends Component<Props, State> {
     }
 
     clozeCard(card: ClozeCardInfo) {
+        const lemma = this.state.lemmas_by_id![card.lemma_id];
+
         let sentenceWithUnderscores = "";
         let prevEnd = 0;
 
@@ -315,6 +324,7 @@ export default class Cards extends Component<Props, State> {
             <MultipleChoice
                 key={Math.random()}
                 card={card}
+                lemma={lemma}
                 correct_answer={card.answer.slash_separated_word}
                 advance={correct => this.advance(correct, card)}
                 mark_easiness={this.shouldMarkEasiness()}

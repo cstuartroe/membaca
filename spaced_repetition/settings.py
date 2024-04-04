@@ -86,7 +86,7 @@ PROD_PG = {
 }
 
 DATABASES = {
-    'default': PROD_PG
+    'default': DEV_SQLITE if DEBUG else PROD_PG
 }
 
 
