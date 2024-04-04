@@ -85,8 +85,10 @@ PROD_PG = {
     'PORT': '5432',
 }
 
+USE_DEV = bool(os.getenv("USE_DEV"))
+
 DATABASES = {
-    'default': DEV_SQLITE if DEBUG else PROD_PG
+    'default': DEV_SQLITE if USE_DEV else PROD_PG
 }
 
 
