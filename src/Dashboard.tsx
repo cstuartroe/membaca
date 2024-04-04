@@ -11,7 +11,7 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
-import {CardDescriptor, EASINESS_DAYS, Language} from "./models";
+import {CardDescriptor, DailySummary, EASINESS_DAYS, Language} from "./models";
 
 ChartJS.register(
     ArcElement,
@@ -109,6 +109,8 @@ function EasinessPieChart(props: {card_descriptors: CardDescriptor[]}) {
     }}/>;
 }
 
+type ModalType = "details" | "history" | "share";
+
 type Props = {
     is_superuser: boolean,
     current_language: Language,
@@ -116,14 +118,15 @@ type Props = {
 
 type State = {
     card_descriptors?: CardDescriptor[],
-    show_card_details: boolean,
+    modal_type: ModalType | null,
+    history?: DailySummary[],
 }
 
 export default class Dashboard extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            show_card_details: false,
+            modal_type: null,
         };
     }
 
@@ -136,20 +139,26 @@ export default class Dashboard extends Component<Props, State> {
                 }))}))
     }
 
+    closeX() {
+        return (
+            <div className="close" onClick={() => this.setState({modal_type: null})}>
+                X
+            </div>
+        );
+    }
+
     cardDetailPane() {
-        const { card_descriptors } = this.state;
+        const {card_descriptors} = this.state;
 
         if (card_descriptors === undefined) {
             return null;
         }
 
         return (
-            <div className="card-detail-pane">
+            <div className="dashboard-modal">
                 <div className="container">
                     <div className="row">
-                        <div className="close" onClick={() => this.setState({show_card_details: false})}>
-                            X
-                        </div>
+                        {this.closeX()}
                         <div className="col-12">
                             <ProjectionBarChart card_descriptors={card_descriptors}/>
                         </div>
@@ -164,6 +173,78 @@ export default class Dashboard extends Component<Props, State> {
         );
     }
 
+    historyModal() {
+        const { history } = this.state;
+
+        if (history === undefined) {
+            fetch(`/api/history?language_id=${this.props.current_language.id}`)
+                .then(res => res.json())
+                .then(data => this.setState({
+                    history: data.map((summary: any) => ({...summary, date: new Date(summary.date)}))
+                }))
+            return null;
+        }
+
+        const totalCards = history.reduce(
+            (total, summary) => (total + summary.new_lemma_trials + summary.review_trials),
+            0,
+        )
+
+        return (
+            <div className="dashboard-modal">
+                <div className="container">
+                    <div className="row">
+                        {this.closeX()}
+                        <div className="col-12">
+                            <h2>Your history</h2>
+                        </div>
+                        <div className="col-12">
+                            <p style={{textAlign: "center"}}>In total, you've done {totalCards} cards.</p>
+                        </div>
+
+                        <div className="col-2"><p>Date</p></div>
+                        <div className="col-2"><p>New words</p></div>
+                        <div className="col-2"><p>New word cards</p></div>
+                        <div className="col-2"><p>Review cards</p></div>
+                        <div className="col-4"><p>Total cards</p></div>
+
+                        {history.map(summary => (
+                            <>
+                                <div className="col-2">
+                                    <p>{summary.date.getUTCFullYear()}-{summary.date.getUTCMonth() + 1}-{summary.date.getUTCDate()}</p>
+                                </div>
+                                <div className="col-2">
+                                    <p>{summary.new_lemmas}</p>
+                                </div>
+                                <div className="col-2">
+                                    <p>{summary.new_lemma_trials}</p>
+                                </div>
+                                <div className="col-2">
+                                    <p>{summary.review_trials}</p>
+                                </div>
+                                <div className="col-4">
+                                    <p>{summary.new_lemma_trials + summary.review_trials}</p>
+                                </div>
+                            </>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    modal() {
+        switch (this.state.modal_type) {
+            case "details":
+                return this.cardDetailPane();
+            case "history":
+                return this.historyModal();
+            case "share":
+                return null;
+            case null:
+                return null;
+        }
+    }
 
     render() {
         const {card_descriptors} = this.state;
@@ -186,13 +267,21 @@ export default class Dashboard extends Component<Props, State> {
                             {' '}{due_cards.length} cards ready for review.
                         </p>
                     </div>
-                    <div className="col-6">
-                        <Link to="/cards/review">
-                            <div className="big button">
-                                Review cards
+                    {(due_cards.length > 0) ? (
+                        <div className="col-6">
+                            <Link to="/cards/review">
+                                <div className="big button">
+                                    Review cards
+                                </div>
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="col-6">
+                            <div className="big button" onClick={() => this.setState({modal_type: "share"})}>
+                                Share today's reviews!
                             </div>
-                        </Link>
-                    </div>
+                        </div>
+                    )}
                     <div className="col-6">
                         <Link to="/cards/new">
                             <div className="big button">
@@ -201,11 +290,13 @@ export default class Dashboard extends Component<Props, State> {
                         </Link>
                     </div>
                     <div className="col-6">
-                        <div
-                            className="big button"
-                            onClick={() => this.setState({show_card_details: true})}
-                        >
+                        <div className="big button" onClick={() => this.setState({modal_type: "details"})}>
                             Show details
+                        </div>
+                    </div>
+                    <div className="col-6">
+                        <div className="big button" onClick={() => this.setState({modal_type: "history"})}>
+                            See history
                         </div>
                     </div>
                     <div className="col-12">
@@ -220,7 +311,7 @@ export default class Dashboard extends Component<Props, State> {
                             </div>
                         </Link>
                     </div>
-                    {this.state.show_card_details && this.cardDetailPane()}
+                    {this.modal()}
                 </div>
             </div>
         );

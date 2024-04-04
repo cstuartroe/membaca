@@ -75,3 +75,10 @@ export const EASINESS_DAYS = [
   90,
   365,
 ];
+
+export type DailySummary = {
+  date: Date,
+  new_lemmas: number,
+  new_lemma_trials: number,
+  review_trials: number,
+}
