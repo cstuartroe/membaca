@@ -39,6 +39,13 @@ export default class AdminPowers extends Component<Props, State> {
                             </div>
                         </Link>
                     </div>
+                    <div className="col-6">
+                        <Link to="/indonesian_e">
+                            <div className="big button">
+                                Set some Indonesian e's
+                            </div>
+                        </Link>
+                    </div>
                 </div>
             </div>
         );

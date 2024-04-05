@@ -18,6 +18,7 @@ from .views.playing_lemmas import PlayingLemmasView
 from .views.cards import NewCardsView, ReviewCardsView
 from .views.trial import TrialView
 from .views.history import HistoryView
+from .views.indonesian_e import IndonesianEView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -43,6 +44,7 @@ urlpatterns = [
     path("api/cards/review", ReviewCardsView.as_view(), name="review_cards"),
     path("api/trial", TrialView.as_view(), name="trial"),
     path("api/history", HistoryView.as_view(), name="history"),
+    path("api/indonesian_e", IndonesianEView.as_view(), name="indonesian_e"),
 
     re_path(r'^.*$', ReactIndexView.as_view(), name="react_index")
 ]

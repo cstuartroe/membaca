@@ -16,6 +16,7 @@ import {Language, User} from "./models";
 import AdminPowers from "./AdminPowers";
 import Cards from "./Cards";
 import Collection from "./Collection";
+import IndonesianEPicker from "./IndonesianEPicker";
 
 type AppState = {
     user_state?: {
@@ -92,6 +93,10 @@ class App extends Component<{}, AppState> {
             {
                 path: "/cards/review",
                 element: <Cards user={user} language={current_language} new={false}/>
+            },
+            {
+                path: "/indonesian_e",
+                element: <IndonesianEPicker/>
             },
             {
                 path: "*",

@@ -218,3 +218,15 @@ $sentence_checkbox_width: 2vh;
     font-size: 2vh;
   }
 }
+
+.indonesian-e-picker {
+  font-family: "Noto Sans", sans-serif;
+  text-align: center;
+  padding: 4vh 0;
+  font-size: 2vh;
+
+  .e-option {
+    position: absolute;
+    left: 0;
+  }
+}
