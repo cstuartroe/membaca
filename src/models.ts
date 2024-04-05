@@ -54,8 +54,9 @@ export type WordInSentence = {
 
 export type TrialType = "ct" | "cc" | "cz" | "show";
 
-type Trial = {
+export type Trial = {
   trial_type: TrialType,
+  correct: boolean,
   easiness: number,
 }
 

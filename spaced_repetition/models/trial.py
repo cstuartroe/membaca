@@ -46,7 +46,7 @@ class Trial(models.Model):
 
     def to_json(self):
         return {
-            # Skipping a bunch of fields because PlayingLemmaViews only needs these
             "trial_type": self.trial_type,
+            "correct": self.correct,
             "easiness": self.easiness,
         }

@@ -11,7 +11,7 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
-import {CardDescriptor, DailySummary, EASINESS_DAYS, Language} from "./models";
+import {CardDescriptor, DailySummary, EASINESS_DAYS, Language, Trial} from "./models";
 
 ChartJS.register(
     ArcElement,
@@ -111,6 +111,14 @@ function EasinessPieChart(props: {card_descriptors: CardDescriptor[]}) {
 
 type ModalType = "details" | "history" | "share";
 
+type History = {
+    summaries: DailySummary[],
+    today: {
+        new_lemma_trials: Trial[],
+        review_trials: Trial[],
+    },
+}
+
 type Props = {
     is_superuser: boolean,
     current_language: Language,
@@ -119,7 +127,7 @@ type Props = {
 type State = {
     card_descriptors?: CardDescriptor[],
     modal_type: ModalType | null,
-    history?: DailySummary[],
+    history?: History,
 }
 
 export default class Dashboard extends Component<Props, State> {
@@ -137,6 +145,22 @@ export default class Dashboard extends Component<Props, State> {
                     ...descriptor,
                     due_date: new Date(descriptor.due_date),
                 }))}))
+    }
+
+    getHistory() {
+        if (this.state.history !== undefined) {
+            return this.state.history;
+        }
+
+        fetch(`/api/history?language_id=${this.props.current_language.id}`)
+            .then(res => res.json())
+            .then(data => this.setState({
+                history: {
+                    summaries: data.summaries.map((summary: any) => ({...summary, date: new Date(summary.date)})),
+                    today: data.today,
+                }
+            }))
+        return null;
     }
 
     closeX() {
@@ -174,18 +198,13 @@ export default class Dashboard extends Component<Props, State> {
     }
 
     historyModal() {
-        const { history } = this.state;
+        const history = this.getHistory();
 
-        if (history === undefined) {
-            fetch(`/api/history?language_id=${this.props.current_language.id}`)
-                .then(res => res.json())
-                .then(data => this.setState({
-                    history: data.map((summary: any) => ({...summary, date: new Date(summary.date)}))
-                }))
+        if (history === null) {
             return null;
         }
 
-        const totalCards = history.reduce(
+        const totalCards = history.summaries.reduce(
             (total, summary) => (total + summary.new_lemma_trials + summary.review_trials),
             0,
         )
@@ -202,31 +221,87 @@ export default class Dashboard extends Component<Props, State> {
                             <p style={{textAlign: "center"}}>In total, you've done {totalCards} cards.</p>
                         </div>
 
-                        <div className="col-2"><p>Date</p></div>
+                        <div className="col-4"><p>Date</p></div>
                         <div className="col-2"><p>New words</p></div>
                         <div className="col-2"><p>New word cards</p></div>
                         <div className="col-2"><p>Review cards</p></div>
-                        <div className="col-4"><p>Total cards</p></div>
+                        <div className="col-2"><p>Total cards</p></div>
+                    </div>
 
-                        {history.map(summary => (
-                            <>
-                                <div className="col-2">
-                                    <p>{summary.date.getUTCFullYear()}-{summary.date.getUTCMonth() + 1}-{summary.date.getUTCDate()}</p>
-                                </div>
-                                <div className="col-2">
-                                    <p>{summary.new_lemmas}</p>
-                                </div>
-                                <div className="col-2">
-                                    <p>{summary.new_lemma_trials}</p>
-                                </div>
-                                <div className="col-2">
-                                    <p>{summary.review_trials}</p>
-                                </div>
-                                <div className="col-4">
-                                    <p>{summary.new_lemma_trials + summary.review_trials}</p>
-                                </div>
-                            </>
-                        ))}
+                    {history.summaries.map(summary => (
+                        <div className="row" key={summary.date.getTime()}>
+                            <div className="col-4">
+                                <p>{summary.date.getUTCFullYear()}-{summary.date.getUTCMonth() + 1}-{summary.date.getUTCDate()}</p>
+                            </div>
+                            <div className="col-2">
+                                <p>{summary.new_lemmas}</p>
+                            </div>
+                            <div className="col-2">
+                                <p>{summary.new_lemma_trials}</p>
+                            </div>
+                            <div className="col-2">
+                                <p>{summary.review_trials}</p>
+                            </div>
+                            <div className="col-2">
+                                <p>{summary.new_lemma_trials + summary.review_trials}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    shareModal() {
+        const history = this.getHistory();
+
+        if (history === null) {
+            return null;
+        }
+
+        const row_size = 5;
+
+        const headline = `I finished all my ${this.props.current_language.name} reviews today!`;
+        const num_trials = history.today.review_trials.length;
+
+        let squares: (string | React.ReactNode)[] = [];
+        let correct = 0;
+        let copy_string = headline + "\n";
+
+        history.today.review_trials.forEach((trial, i) => {
+            if (i !== 0 && i % row_size === 0) {
+                squares.push(<br key={i}/>);
+                copy_string += "\n";
+            }
+            const square = trial.correct ? "🟩" : "🟥";
+            squares.push(square);
+            copy_string += square;
+            if (trial.correct) { correct++; }
+        })
+
+        const fractions = `${correct}/${num_trials} (${Math.round(100*correct/history.today.review_trials.length)}%)`;
+        copy_string += "\n" + fractions;
+
+        return (
+            <div className="dashboard-modal">
+                <div className="container">
+                    <div className="row">
+                        {this.closeX()}
+                        <div className="col-8 col-md-4 offset-2 offset-md-4">
+                            <p>
+                                {headline}
+                                <br/>
+                                {squares}
+                                <br/>
+                                {fractions}
+                            </p>
+                            <div
+                                className="big button"
+                                onClick={() => navigator.clipboard.writeText(copy_string)}
+                            >
+                                Copy!
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -240,7 +315,7 @@ export default class Dashboard extends Component<Props, State> {
             case "history":
                 return this.historyModal();
             case "share":
-                return null;
+                return this.shareModal();
             case null:
                 return null;
         }
