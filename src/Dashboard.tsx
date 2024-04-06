@@ -11,7 +11,7 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
-import {CardDescriptor, DailySummary, EASINESS_DAYS, Language, Trial} from "./models";
+import {CardDescriptor, DailySummary, EASINESS_DAYS, Language, Trial, Document} from "./models";
 
 ChartJS.register(
     ArcElement,
@@ -122,6 +122,18 @@ type History = {
     },
 }
 
+type DocumentHistory = {
+    "last_read": Date,
+    "sentences_read": number,
+    "total_sentences": number,
+    "document": Document,
+}
+
+type ReadingHistory = {
+    document_histories: DocumentHistory[],
+    total_words_read: number,
+}
+
 type Props = {
     is_superuser: boolean,
     current_language: Language,
@@ -131,6 +143,7 @@ type State = {
     card_descriptors?: CardDescriptor[],
     modal_type: ModalType | null,
     history?: History,
+    reading_history?: ReadingHistory,
 }
 
 export default class Dashboard extends Component<Props, State> {
@@ -161,6 +174,22 @@ export default class Dashboard extends Component<Props, State> {
                 history: {
                     summaries: data.summaries.map((summary: any) => ({...summary, date: new Date(summary.date)})),
                     today: data.today,
+                }
+            }))
+        return null;
+    }
+
+    getReadingHistory() {
+        if (this.state.reading_history !== undefined) {
+            return this.state.reading_history;
+        }
+
+        fetch(`/api/reading_history?language_id=${this.props.current_language.id}`)
+            .then(res => res.json())
+            .then(data => this.setState({
+                reading_history: {
+                    document_histories: data.document_histories.map((h: any) => ({...h, last_read: new Date(h.last_read)})),
+                    total_words_read: data.total_words_read,
                 }
             }))
         return null;
@@ -331,10 +360,19 @@ export default class Dashboard extends Component<Props, State> {
             return null;
         }
 
+        const reading_history = this.getReadingHistory();
+
+        if (reading_history === null) {
+            return null;
+        }
+
         const new_cards = card_descriptors.filter(card => card.last_trial === null)
         const seen_cards = card_descriptors.filter(card => card.last_trial !== null)
         const now = new Date();
         const due_cards = seen_cards.filter(card => card.due_date < now);
+        const continue_reading_document_histories = reading_history.document_histories.filter(d => (
+            d.sentences_read < d.total_sentences
+        )).slice(0, 3)
 
         return (
             <div className="col-12 col-md-6 offset-md-3">
@@ -379,10 +417,19 @@ export default class Dashboard extends Component<Props, State> {
                     </div>
                     <div className="col-12">
                         <p>
-                            domcumints
+                            Read {reading_history.total_words_read} words so far.
                         </p>
                     </div>
-                    <div className="col-6">
+                    {continue_reading_document_histories.map(h => (
+                        <div className="col-12" key={h.document.id}>
+                            <Link to={`/document/${h.document.id}`}>
+                                <div className="big button">
+                                    Continue reading {h.document.title} ({Math.round(100*h.sentences_read/h.total_sentences)}%)
+                                </div>
+                            </Link>
+                        </div>
+                    ))}
+                    <div className="col-12">
                         <Link to="/collections">
                             <div className="big button">
                                 See collections
