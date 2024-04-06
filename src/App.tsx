@@ -17,6 +17,7 @@ import AdminPowers from "./AdminPowers";
 import Cards from "./Cards";
 import Collection from "./Collection";
 import IndonesianEPicker from "./IndonesianEPicker";
+import LoggedOutHome from "./LoggedOutHome";
 
 type AppState = {
     user_state?: {
@@ -41,6 +42,21 @@ class App extends Component<{}, AppState> {
 
     componentDidMount() {
         this.reloadUserState();
+    }
+
+    loggedOutPage() {
+        const loggedOutRoutes = [
+            {
+                path: "/",
+                element: <LoggedOutHome/>,
+            },
+            {
+                path: "*",
+                element: <Navigate to="/"/>,
+            },
+        ];
+
+        return <RouterProvider router={createBrowserRouter(loggedOutRoutes)}/>;
     }
 
     noLanguageChosenRoutes() {
@@ -142,8 +158,7 @@ class App extends Component<{}, AppState> {
         const { user, current_language } = this.state.user_state;
 
         if (user === null) {
-            window.location.href = `/google_sso/login/?next=${window.location.pathname}`;
-            return null;
+            return this.loggedOutPage();
         } else {
             return this.loggedInPage({user, current_language})
         }
