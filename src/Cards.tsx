@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import {Language, Lemma, Sentence, Substring, EASINESS_DAYS, User} from "./models";
 import {safePost} from "./ajax_utils";
 import classNames from "classnames";
+import {Link} from "react-router-dom";
 
 function shuffle<T>(array: T[]) {
     let currentIndex = array.length;
@@ -340,7 +341,7 @@ export default class Cards extends Component<Props, State> {
 
         return <>
             <div className="col-12">
-                <div className="sentence" style={{paddingTop: "15vh"}}>
+                <div className="sentence" style={{paddingTop: "5vh"}}>
                     Great job! {num_correct}/{this.state.trial_results.length}{' '}
                     ({Math.round(100 * num_correct / this.state.trial_results.length)}%){' '}
                     correct.
@@ -354,6 +355,16 @@ export default class Cards extends Component<Props, State> {
                         "{this.state.lemmas_by_id![lemma_id].translation}"
                     </div>
                 ))}
+                <a href={window.location.href}>
+                    <div className="big button">
+                        Continue {this.props.new ? "learning" : "reviewing"}
+                    </div>
+                </a>
+                <Link to="/dashboard">
+                    <div className="big button">
+                        Back to dashboard
+                    </div>
+                </Link>
             </div>
         </>;
     }
