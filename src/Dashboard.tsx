@@ -71,6 +71,9 @@ function ProjectionBarChart(props: {card_descriptors: CardDescriptor[]}) {
             x: {
                 stacked: true,
             },
+            y: {
+                stacked: true,
+            },
         },
     }}/>;
 }
