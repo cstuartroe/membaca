@@ -389,6 +389,26 @@ export default class Cards extends Component<Props, State> {
             return null;
         }
 
+        if (this.state.cards.length === 0) {
+            return (
+                <div className="col-12 col-md-8 offset-md-2 flashcard">
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="sentence">
+                                {this.props.new && (
+                                    "You don't have any new words to learn. Try adding more sentences from a document."
+                                )}
+                                {!this.props.new && (
+                                    "You don't have any reviews right now. Try waiting a day or two, or check out " +
+                                    "your review forecast on your dashboard."
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <>
                 {this.progressBar()}
