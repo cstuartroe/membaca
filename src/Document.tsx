@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { useParams } from "react-router-dom";
 const classNames = require('classnames');
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faEllipsis } from "@fortawesome/free-solid-svg-icons";
 import {Sentence, WordInSentence, Substring, Lemma, Language} from "./models";
 import {safePost} from "./ajax_utils";
 
@@ -18,6 +18,11 @@ const SKIP_CHARACTERS: string[] = [
     "?",
     "\"",
     "'",
+    ";",
+    "-",
+    "(",
+    ")",
+    "/",
 ];
 
 
@@ -382,13 +387,15 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
         return [words, substrings];
     }
 
-    substringElements() {
+    substringElements(): [React.ReactNode[], boolean] {
         const { language } = this.props;
         const { text } = this.props.sentence;
         const { focused } = this.state;
         const [words, substrings] = this.deriveWordsAndSubstrings();
 
-        return substrings.map((assigned_substring, i) => {
+        let any_unassigned = false;
+
+        const elements = substrings.map((assigned_substring, i) => {
             const substring_text = text.substring(assigned_substring.substring.start, assigned_substring.substring.end);
             const substring_focused = focused?.word_index === assigned_substring.word_index;
             const substring_expanded = substring_focused && !!focused?.expanded;
@@ -445,6 +452,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
 
                 switch (words[word_index].lemma_id) {
                     case UNASSIGNED_LEMMA_ID:
+                        any_unassigned = true;
                         return (
                             <span
                                 className={classNames('unassigned_word', extra_classnames)}
@@ -462,6 +470,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                             </span>
                         );
                     case ASSIGNING_LEMMA_ID:
+                        any_unassigned = true;
                         return (
                             <span
                                 className={classNames('assigning_word', extra_classnames)}
@@ -493,25 +502,34 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                 }
             }
         });
+
+        return [elements, any_unassigned];
     }
 
-    checkBox() {
+    checkBox(ready: boolean) {
+        let element: React.ReactNode;
+        if (this.state.added) {
+            element = <FontAwesomeIcon icon={faCheck}/>;
+        } else if (!ready) {
+            element = <FontAwesomeIcon icon={faEllipsis}/>;
+        } else {
+            element = <input
+                type="checkbox"
+                onClick={() => this.add()}
+            />;
+        }
+
         return <div className="sentence-checkbox">
-            {this.state.added ? (
-                <FontAwesomeIcon icon={faCheck}/>
-            ) : (
-                <input
-                    type="checkbox"
-                    onClick={() => this.add()}
-                />
-            )}
+            {element}
         </div>;
     }
 
     render() {
+        const [substring_elements, any_unassigned] = this.substringElements();
+
         return <div className="document-sentence">
-            {this.checkBox()}
-            {this.substringElements()}
+            {this.checkBox(!any_unassigned)}
+            {substring_elements}
         </div>;
     }
 }
