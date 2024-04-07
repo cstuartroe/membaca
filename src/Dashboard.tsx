@@ -40,6 +40,10 @@ function addDays(d: Date, days: number) {
     return new Date(d.getTime() + days*millisecondsInDay);
 }
 
+function ISODate(d: Date) {
+    return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+}
+
 function ProjectionBarChart(props: {card_descriptors: CardDescriptor[]}) {
     const {card_descriptors} = props;
 
@@ -112,7 +116,7 @@ function EasinessPieChart(props: {card_descriptors: CardDescriptor[]}) {
     }}/>;
 }
 
-type ModalType = "details" | "history" | "share";
+type ModalType = "details" | "history" | "share" | "reading_history";
 
 type History = {
     summaries: DailySummary[],
@@ -123,15 +127,20 @@ type History = {
 }
 
 type DocumentHistory = {
-    "last_read": Date,
-    "sentences_read": number,
-    "total_sentences": number,
-    "document": Document,
+    last_read: Date,
+    sentences_read: number,
+    total_sentences: number,
+    document: Document,
+}
+
+type WordsOnDay = {
+    date: Date,
+    words: number,
 }
 
 type ReadingHistory = {
     document_histories: DocumentHistory[],
-    total_words_read: number,
+    words_read_by_day: WordsOnDay[],
 }
 
 type Props = {
@@ -189,7 +198,7 @@ export default class Dashboard extends Component<Props, State> {
             .then(data => this.setState({
                 reading_history: {
                     document_histories: data.document_histories.map((h: any) => ({...h, last_read: new Date(h.last_read)})),
-                    total_words_read: data.total_words_read,
+                    words_read_by_day: data.words_read_by_day.map((d: any) => ({...d, date: new Date(d.date)})),
                 }
             }))
         return null;
@@ -247,7 +256,7 @@ export default class Dashboard extends Component<Props, State> {
                     <div className="row">
                         {this.closeX()}
                         <div className="col-12">
-                            <h2>Your history</h2>
+                            <h2>Your flashcard history</h2>
                         </div>
                         <div className="col-12">
                             <p style={{textAlign: "center"}}>In total, you've done {totalCards} cards.</p>
@@ -263,7 +272,7 @@ export default class Dashboard extends Component<Props, State> {
                     {history.summaries.map(summary => (
                         <div className="row" key={summary.date.getTime()}>
                             <div className="col-4">
-                                <p>{summary.date.getUTCFullYear()}-{summary.date.getUTCMonth() + 1}-{summary.date.getUTCDate()}</p>
+                                <p>{ISODate(summary.date)}</p>
                             </div>
                             <div className="col-2">
                                 <p>{summary.new_lemmas}</p>
@@ -340,6 +349,41 @@ export default class Dashboard extends Component<Props, State> {
         );
     }
 
+    readingHistoryModal() {
+        const reading_history = this.getReadingHistory();
+
+        if (reading_history === null) {
+            return null;
+        }
+
+        return (
+            <div className="dashboard-modal">
+                <div className="container">
+                    <div className="row">
+                        {this.closeX()}
+                        <div className="col-12">
+                            <h2>Your reading history</h2>
+                        </div>
+
+                        <div className="col-6 col-md-3 offset-md-3"><p>Date</p></div>
+                        <div className="col-6"><p>Words read</p></div>
+                    </div>
+
+                    {reading_history.words_read_by_day.map(day => (
+                        <div className="row" key={day.date.getTime()}>
+                            <div className="col-6 col-md-3 offset-md-3">
+                                <p>{ISODate(day.date)}</p>
+                            </div>
+                            <div className="col-6">
+                                <p>{day.words}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     modal() {
         switch (this.state.modal_type) {
             case "details":
@@ -348,6 +392,8 @@ export default class Dashboard extends Component<Props, State> {
                 return this.historyModal();
             case "share":
                 return this.shareModal();
+            case "reading_history":
+                return this.readingHistoryModal();
             case null:
                 return null;
         }
@@ -373,6 +419,7 @@ export default class Dashboard extends Component<Props, State> {
         const continue_reading_document_histories = reading_history.document_histories.filter(d => (
             d.sentences_read < d.total_sentences
         )).slice(0, 3)
+        const total_words_read = reading_history.words_read_by_day.reduce((n, d) => n + d.words, 0);
 
         return (
             <div className="col-12 col-md-6 offset-md-3">
@@ -417,24 +464,30 @@ export default class Dashboard extends Component<Props, State> {
                     </div>
                     <div className="col-12">
                         <p>
-                            Read {reading_history.total_words_read} words so far.
+                            Read {total_words_read} words so far.
                         </p>
                     </div>
                     {continue_reading_document_histories.map(h => (
                         <div className="col-12" key={h.document.id}>
                             <Link to={`/document/${h.document.id}`}>
                                 <div className="big button">
-                                    Continue reading {h.document.title} ({Math.round(100*h.sentences_read/h.total_sentences)}%)
+                                    Continue
+                                    reading {h.document.title} ({Math.round(100 * h.sentences_read / h.total_sentences)}%)
                                 </div>
                             </Link>
                         </div>
                     ))}
-                    <div className="col-12">
+                    <div className="col-6">
                         <Link to="/collections">
                             <div className="big button">
                                 See collections
                             </div>
                         </Link>
+                    </div>
+                    <div className="col-6">
+                        <div className="big button" onClick={() => this.setState({modal_type: "reading_history"})}>
+                            See history
+                        </div>
                     </div>
                     {this.modal()}
                 </div>
