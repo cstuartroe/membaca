@@ -10,6 +10,7 @@ from spaced_repetition.models.document import Document
 from spaced_repetition.models.language import Language
 from spaced_repetition.models.lemma import Lemma
 from spaced_repetition.models.lemma_add import LemmaAdd
+from spaced_repetition.models.metadata_trial import MetadataTrial
 from spaced_repetition.models.sentence import Sentence
 from spaced_repetition.models.sentence_add import SentenceAdd
 from spaced_repetition.models.trial import Trial
@@ -24,6 +25,7 @@ MODELS_TO_TRANSPILE = [
     Language,
     Lemma,
     LemmaAdd,
+    MetadataTrial,
     Sentence,
     SentenceAdd,
     Trial,
@@ -45,7 +47,7 @@ def csv_row(items):
 
 
 class Command(BaseCommand):
-    help = 'Transpiles Django models into a Typescript type definition file'
+    help = 'Exports all tables into CSV files'
 
     def add_arguments(self, parser):
         parser.add_argument("destination", type=str, help="The directory into which to write backups")

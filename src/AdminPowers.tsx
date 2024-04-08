@@ -46,6 +46,13 @@ export default class AdminPowers extends Component<Props, State> {
                             </div>
                         </Link>
                     </div>
+                    <div className="col-6">
+                        <Link to="/dutch_gender">
+                            <div className="big button">
+                                Set some Dutch noun genders
+                            </div>
+                        </Link>
+                    </div>
                 </div>
             </div>
         );

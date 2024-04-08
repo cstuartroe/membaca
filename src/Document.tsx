@@ -201,6 +201,7 @@ class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssig
                              language_id: this.props.language.id,
                              citation_form: this.props.search_string,
                              translation: "",
+                             metadata: {},
                          }
                      })}
                 >

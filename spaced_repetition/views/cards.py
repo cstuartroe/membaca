@@ -8,7 +8,7 @@ from django.db import transaction
 from .ajax_utils import logged_in
 from spaced_repetition.models.user import User
 from spaced_repetition.models.lemma import Lemma
-from spaced_repetition.models.trial import Trial
+from spaced_repetition.models.trial import Trial, MAX_EASINESS
 from spaced_repetition.models.word_in_sentence import WordInSentence
 from spaced_repetition.utils.string_utils import levenshtein
 from .playing_lemmas import get_playing_lemmas
@@ -192,10 +192,7 @@ class ReviewCardsView(CardsView):
 
         cards: list[CardInfo] = []
         for lemma_info in review_lemmas:
-            if lemma_info.last_trial.easiness == 7:
-                recommended_easiness = 7
-            else:
-                recommended_easiness = lemma_info.last_trial.easiness + 1
+            recommended_easiness = min(MAX_EASINESS, lemma_info.last_trial.easiness + 1)
 
             next_trial_type = TRIAL_TYPE_CYCLE[lemma_info.last_trial.trial_type]
             if next_trial_type is Trial.TrialType.CHOOSE_TRANSLATION:

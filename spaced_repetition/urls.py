@@ -20,6 +20,9 @@ from .views.trial import TrialView
 from .views.history import HistoryView
 from .views.indonesian_e import IndonesianEView
 from .views.reading_history import ReadingHistoryView
+from .views.metadata_cards import NewMetadataCardsView, ReviewMetadataCardsView
+from .views.dutch_genderless_words import DutchGenderlessWordsView
+from .views.metadata_trial import MetadataTrialView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -47,6 +50,10 @@ urlpatterns = [
     path("api/history", HistoryView.as_view(), name="history"),
     path("api/indonesian_e", IndonesianEView.as_view(), name="indonesian_e"),
     path("api/reading_history", ReadingHistoryView.as_view(), name="reading_history"),
+    path("api/metadata_cards/new", NewMetadataCardsView.as_view(), name="new_metadata_cards"),
+    path("api/metadata_cards/review", ReviewMetadataCardsView.as_view(), name="review_metadata_cards"),
+    path("api/dutch_genderless_words", DutchGenderlessWordsView.as_view(), name="dutch_genderless_words"),
+    path("api/metadata_trial", MetadataTrialView.as_view(), name="metadata_trial"),
 
     re_path(r'^.*$', ReactIndexView.as_view(), name="react_index")
 ]

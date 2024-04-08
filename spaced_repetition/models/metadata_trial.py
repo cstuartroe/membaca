@@ -1,36 +1,17 @@
 import datetime
+from typing import Callable
 from django.db import models
 from django.core import validators
-from django.utils.translation import gettext_lazy as _
+from .language import LANGUAGE_IDS
+from .lemma import Lemma
 from .lemma_add import LemmaAdd
-from .sentence import Sentence
+from .trial import EASINESS_DAYS
 
 
-EASINESS_DAYS = [
-    0,
-    1,
-    2,
-    4,
-    10,
-    30,
-    90,
-    365,
-]
-
-
-MAX_EASINESS = len(EASINESS_DAYS) - 1
-
-
-class Trial(models.Model):
-    class TrialType(models.TextChoices):
-        CLOZE = "cz", _("cloze")
-        CHOOSE_TRANSLATION = "ct", _("choose translation")
-        CHOOSE_CITATION_FORM = "cc", _("choose citation form")
-
+class MetadataTrial(models.Model):
     time_created = models.DateTimeField()
     lemma_add = models.ForeignKey(LemmaAdd, on_delete=models.CASCADE)
-    trial_type = models.CharField(max_length=2, choices=TrialType.choices)
-    sentence = models.ForeignKey(Sentence, null=True, blank=True, on_delete=models.CASCADE)
+    metadata_field = models.CharField(max_length=16)
     choices = models.CharField(max_length=256)
     choice = models.CharField(max_length=128)
     correct = models.BooleanField()
@@ -42,14 +23,14 @@ class Trial(models.Model):
     )
 
     def __str__(self):
-        return f"{self.lemma_add} on {self.time_created}"
+        return f"Testing {self.metadata_field} of {self.lemma_add} on {self.time_created}"
 
     def due_date(self) -> datetime.date:
         return (self.time_created + datetime.timedelta(days=EASINESS_DAYS[self.easiness])).date()
 
     def to_json(self):
         return {
-            "trial_type": self.trial_type,
+            "metadata_field": self.metadata_field,
             "correct": self.correct,
             "easiness": self.easiness,
         }

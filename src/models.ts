@@ -17,6 +17,7 @@ export type Lemma = {
   language_id: number,
   citation_form: string,
   translation: string,
+  metadata: {[key: string]: string},
 }
 
 export type Collection = {

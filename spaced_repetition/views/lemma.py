@@ -14,6 +14,14 @@ class LemmaView(View):
     @parse_post
     def post(self, request: HttpRequest, post_data):
         lemma = Lemma.objects.get(id=post_data["id"])
-        lemma.citation_form = post_data["citation_form"]
+
+        citation_form = post_data.get("citation_form", None)
+        if citation_form:
+            lemma.citation_form = citation_form
+
+        gender = post_data.get("metadata:gender", None)
+        if gender:
+            lemma.set_metadata_field("gender", gender)
+
         lemma.save()
         return HttpResponse(200)

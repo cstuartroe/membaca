@@ -14,10 +14,12 @@ import Document from "./Document";
 import Collections from "./Collections";
 import {Language, User} from "./models";
 import AdminPowers from "./AdminPowers";
-import Cards from "./Cards";
+import Cards from "./flashcards/Cards";
 import Collection from "./Collection";
 import IndonesianEPicker from "./IndonesianEPicker";
 import LoggedOutHome from "./LoggedOutHome";
+import DutchGenderPicker from "./DutchGenderPicker";
+import MetadataCards from "./flashcards/MetadataCards";
 
 type AppState = {
     user_state?: {
@@ -113,6 +115,18 @@ class App extends Component<{}, AppState> {
             {
                 path: "/indonesian_e",
                 element: <IndonesianEPicker/>
+            },
+            {
+                path: "/dutch_gender",
+                element: <DutchGenderPicker/>
+            },
+            {
+                path: "/metadata_cards/new",
+                element: <MetadataCards user={user} language={current_language} new={true}/>
+            },
+            {
+                path: "/metadata_cards/review",
+                element: <MetadataCards user={user} language={current_language} new={false}/>
             },
             {
                 path: "*",

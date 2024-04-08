@@ -399,6 +399,36 @@ export default class Dashboard extends Component<Props, State> {
         }
     }
 
+    metadataSections() {
+        if (this.props.current_language.name === "Indonesian") {
+            return null;
+        } else if (this.props.current_language.name === "Dutch") {
+            return <>
+                <div className="col-12">
+                    <p>
+                        You can learn Dutch noun genders, too!
+                    </p>
+                </div>
+                <div className="col-6">
+                    <Link to="/metadata_cards/review?metadata_field=gender">
+                        <div className="big button">
+                            Review genders
+                        </div>
+                    </Link>
+                </div>
+                <div className="col-6">
+                    <Link to="/metadata_cards/new?metadata_field=gender">
+                        <div className="big button">
+                            Learn gender of new nouns
+                        </div>
+                    </Link>
+                </div>
+            </>;
+        } else {
+            throw `Unknown language: ${this.props.current_language.name}`;
+        }
+    }
+
     render() {
         const {card_descriptors} = this.state;
 
@@ -412,8 +442,7 @@ export default class Dashboard extends Component<Props, State> {
             return null;
         }
 
-        const new_cards = card_descriptors.filter(card => card.last_trial === null)
-        const seen_cards = card_descriptors.filter(card => card.last_trial !== null)
+        const seen_cards = card_descriptors.filter(card => card.last_trial !== null);
         const now = new Date();
         const due_cards = seen_cards.filter(card => card.due_date < now);
         const continue_reading_document_histories = reading_history.document_histories.filter(d => (
@@ -489,6 +518,7 @@ export default class Dashboard extends Component<Props, State> {
                             See history
                         </div>
                     </div>
+                    {this.metadataSections()}
                     {this.modal()}
                 </div>
             </div>

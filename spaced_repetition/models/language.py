@@ -1,6 +1,12 @@
 from django.db import models
 
 
+LANGUAGE_IDS: dict[str, int] = {
+    "Dutch": 1,
+    "Indonesian": 2,
+}
+
+
 class Language(models.Model):
     name = models.CharField(max_length=16)
 
