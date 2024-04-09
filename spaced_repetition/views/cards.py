@@ -73,7 +73,7 @@ def random_similar(target: Lemma, choices: list[Lemma], number: int = 3) -> list
     diffs: list[tuple[float, Lemma]] = [
         (levenshtein(target.citation_form, choice.citation_form), choice)
         for choice in choices
-        if choice.id != target.id
+        if choice.citation_form != target.citation_form
     ]
 
     diffs.sort(key=lambda pair: pair[0])
