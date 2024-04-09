@@ -15,8 +15,7 @@ from spaced_repetition.models.sentence import Sentence
 from spaced_repetition.models.sentence_add import SentenceAdd
 from spaced_repetition.models.trial import Trial
 from spaced_repetition.models.user import User
-from spaced_repetition.models.user_settings import UserSettings
-from spaced_repetition.models.word_in_sentence import WordInSentence
+from spaced_repetition.models.word_in_sentence import WordInSentence, Substring
 
 
 MODELS_TO_TRANSPILE = [
@@ -28,9 +27,9 @@ MODELS_TO_TRANSPILE = [
     MetadataTrial,
     Sentence,
     SentenceAdd,
+    Substring,
     Trial,
     User,
-    UserSettings,
     WordInSentence,
 ]
 
@@ -46,6 +45,12 @@ def csv_row(items):
     return ",".join(map(csv_escape, items)) + "\n"
 
 
+SKIP_COLUMNS = (
+    ("auth_user", "password"),
+    ("auth_user", "last_login"),
+)
+
+
 class Command(BaseCommand):
     help = 'Exports all tables into CSV files'
 
@@ -56,6 +61,9 @@ class Command(BaseCommand):
         for model in MODELS_TO_TRANSPILE:
             header_row = []
             for field in model._meta.get_fields():
+                if (model._meta.db_table, field.name) in SKIP_COLUMNS:
+                    continue
+
                 t = type(field)
 
                 if t in (AutoField, IntegerField, BooleanField, CharField, TextField, DateTimeField, EmailField):
