@@ -133,7 +133,7 @@ class ReviewMetadataCardsView(MetadataCardsView):
             MetadataCardInfo(
                 lemma=info.lemma,
                 choices=evaluator.choices(info.lemma),
-                recommended_easiness=min(MAX_EASINESS, info.last_trial.easiness)
+                recommended_easiness=min(MAX_EASINESS, info.last_trial.easiness + 1)
             )
             for info in infos_to_play
         ]
