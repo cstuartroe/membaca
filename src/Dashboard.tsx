@@ -501,7 +501,7 @@ export default class Dashboard extends Component<Props, State> {
                             <Link to={`/document/${h.document.id}`}>
                                 <div className="big button">
                                     Continue
-                                    reading {h.document.title} ({Math.round(100 * h.sentences_read / h.total_sentences)}%)
+                                    reading {h.document.title} ({Math.floor(100 * h.sentences_read / h.total_sentences)}%)
                                 </div>
                             </Link>
                         </div>
