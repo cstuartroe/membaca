@@ -144,10 +144,11 @@ $sentence_checkbox_width: 2vh;
     display: flex;
     flex-direction: column;
     cursor: default;
+    min-width: 150px;
 
     .lemma {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
 
       .citation-form {
         padding-right: 10px;
