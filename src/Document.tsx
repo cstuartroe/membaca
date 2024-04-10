@@ -256,7 +256,7 @@ type AssignedSubstring = {
 
 type DocumentSentenceState = {
     added: boolean,
-    fetched_words: WordInSentence[],
+    fetched_words?: WordInSentence[],
     assigning_substrings: Substring[],
     selection_start_substring?: number,
     focused?: {
@@ -270,7 +270,6 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
         super(props);
         this.state = {
             added: false,
-            fetched_words: [],
             assigning_substrings: [],
         };
     }
@@ -303,7 +302,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
         const { fetched_words, assigning_substrings, focused } = this.state;
 
         const words: WordInSentence[] = [];
-        words.push(...fetched_words);
+        words.push(...fetched_words!);
 
         if (assigning_substrings.length > 0) {
             words.push({
@@ -395,7 +394,12 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
     substringElements(): [React.ReactNode[], boolean] {
         const { language } = this.props;
         const { text } = this.props.sentence;
-        const { focused } = this.state;
+        const { focused, fetched_words } = this.state;
+
+        if (fetched_words === undefined) {
+            return [[text], true];
+        }
+
         const [words, substrings] = this.deriveWordsAndSubstrings();
 
         let any_unassigned = false;
@@ -424,7 +428,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                             this.setState({
                                 assigning_substrings: this.state.assigning_substrings.concat([{start, end}]),
                                 focused: {
-                                    word_index: this.state.fetched_words.length, // assigning word index
+                                    word_index: fetched_words.length, // assigning word index
                                     expanded: false,
                                 },
                             });
