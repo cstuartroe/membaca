@@ -31,6 +31,7 @@ function ChooseEasiness(props: {lemma: Lemma, recommended_easiness: number, setE
 }
 
 type MultipleChoiceProps = {
+    question: (reveal_answer: boolean) => React.ReactNode,
     lemma: Lemma,
     choices: string[],
     correct_answer: string,
@@ -127,7 +128,7 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
         );
     }
 
-    render() {
+    mainContent() {
         if (this.state.choice === undefined || (!this.correct() && this.state.easiness === undefined)) {
             return this.answerChoiceButtons();
         } else if (this.state.easiness === undefined) {
@@ -135,5 +136,16 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
         } else {
             return null;
         }
+    }
+
+    render() {
+        const reveal_answer = this.state.choice !== undefined;
+
+        return (
+            <>
+                {this.props.question(reveal_answer)}
+                {this.mainContent()}
+            </>
+        );
     }
 }

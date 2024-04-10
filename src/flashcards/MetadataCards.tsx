@@ -104,13 +104,7 @@ export default class MetadataCards extends Component<Props, State> {
         const card = this.state.cards![this.state.index];
         const metadata_field = this.metadataField();
 
-        return <>
-            <div className="col-12">
-                <div className="single-word">{card.lemma.citation_form}</div>
-            </div>
-            <div className="col-12">
-                <div className="translation">{card.lemma.translation}</div>
-            </div>
+        return (
             <MultipleChoice
                 key={Math.random()}
                 lemma={card.lemma}
@@ -123,8 +117,16 @@ export default class MetadataCards extends Component<Props, State> {
                 recommended_easiness={card.recommended_easiness}
                 mark_easiness={true}
                 advance={correct => this.advance(correct, card)}
+                question={_ => <>
+                    <div className="col-12">
+                        <div className="single-word">{card.lemma.citation_form}</div>
+                    </div>
+                    <div className="col-12">
+                        <div className="translation">{card.lemma.translation}</div>
+                    </div>
+                </>}
             />
-        </>;
+        );
     }
 
     mainContent() {

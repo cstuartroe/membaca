@@ -140,7 +140,7 @@ export default class Cards extends Component<Props, State> {
         }
     }
 
-    multipleChoice(card: CardInfo, lemma: Lemma, correct_answer: string) {
+    multipleChoice(card: CardInfo, lemma: Lemma, correct_answer: string, question: (reveal_answer: boolean) => React.ReactNode) {
         const choices: string[] = [
             correct_answer,
             ...card.other_choices,
@@ -151,6 +151,7 @@ export default class Cards extends Component<Props, State> {
         return (
             <MultipleChoice
                 key={Math.random()}
+                question={question}
                 lemma={lemma}
                 choices={choices}
                 correct_answer={correct_answer}
@@ -172,36 +173,44 @@ export default class Cards extends Component<Props, State> {
         const question = choosingTranslation ? lemma.citation_form : lemma.translation;
         const correct_answer = choosingTranslation ? lemma.translation : lemma.citation_form;
 
-        return <>
+        return this.multipleChoice(card, lemma, correct_answer, _ => (
             <div className="col-12">
                 <div className={choosingTranslation ? "single-word" : "sentence"}>{question}</div>
             </div>
-            {this.multipleChoice(card, lemma, correct_answer)}
-        </>;
+        ))
     }
 
     clozeCard(card: ClozeCardInfo) {
         const lemma = this.state.lemmas_by_id![card.lemma_id];
 
-        let sentenceWithUnderscores = "";
-        let prevEnd = 0;
+        return this.multipleChoice(card, lemma, card.answer.slash_separated_word, reveal_answer => {
+            let sentenceWithUnderscores: React.ReactNode[] = [];
+            let prevEnd = 0;
 
-        card.answer.substrings.forEach(substring => {
-            sentenceWithUnderscores += card.answer.sentence.text.substring(prevEnd, substring.start);
-            sentenceWithUnderscores += "\uff3f";
-            prevEnd = substring.end;
-        });
-        sentenceWithUnderscores += card.answer.sentence.text.substring(prevEnd);
+            card.answer.substrings.forEach(substring => {
+                sentenceWithUnderscores.push(card.answer.sentence.text.substring(prevEnd, substring.start));
+                if (reveal_answer) {
+                    sentenceWithUnderscores.push(
+                        <span style={{textDecoration: "underline"}}>
+                            {card.answer.sentence.text.substring(substring.start, substring.end)}
+                        </span>
+                    );
+                } else {
+                    sentenceWithUnderscores.push("\uff3f\uff3f")
+                }
+                prevEnd = substring.end;
+            });
+            sentenceWithUnderscores.push(card.answer.sentence.text.substring(prevEnd));
 
-        return <>
-            <div className="col-12">
-                <div className="sentence">{sentenceWithUnderscores}</div>
-            </div>
-            <div className="col-12">
-                <div className="translation">{card.answer.sentence.translation}</div>
-            </div>
-            {this.multipleChoice(card, lemma, card.answer.slash_separated_word)}
-        </>;
+            return <>
+                <div className="col-12">
+                    <div className="sentence">{sentenceWithUnderscores}</div>
+                </div>
+                <div className="col-12">
+                    <div className="translation">{card.answer.sentence.translation}</div>
+                </div>
+            </>;
+        })
     }
 
     mainContent() {
