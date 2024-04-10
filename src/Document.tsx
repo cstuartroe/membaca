@@ -528,9 +528,13 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
             />;
         }
 
-        return <div className="sentence-checkbox">
-            {element}
-        </div>;
+        return (
+            <a href={`/admin/spaced_repetition/sentence/${this.props.sentence.id}/change/`} target="_blank">
+                <div className="sentence-checkbox">
+                    {element}
+                </div>
+            </a>
+        );
     }
 
     render() {
