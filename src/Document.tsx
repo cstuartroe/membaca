@@ -61,7 +61,11 @@ class LemmaDisplayCard extends Component<LemmaDisplayCardProps, LemmaDisplayCard
             content = "No lemma"
         } else if (lemma !== undefined) {
             content = <>
-                <div className="citation-form">{lemma.citation_form}</div>
+                <div className="citation-form">
+                    <a href={`/admin/spaced_repetition/lemma/${lemma.id}/change/`} target="_blank">
+                        {lemma.citation_form}
+                    </a>
+                </div>
                 <div className="translation">"{lemma.translation}"</div>
             </>;
         }
