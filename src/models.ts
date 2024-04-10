@@ -53,19 +53,32 @@ export type WordInSentence = {
   substrings: Substring[],
 }
 
-export type TrialType = "ct" | "cc" | "cz" | "show";
-
-export type Trial = {
-  trial_type: TrialType,
+type GenericTrial = {
   correct: boolean,
   easiness: number,
 }
 
-export type CardDescriptor = {
+type GenericCardDescriptor<T extends GenericTrial> = {
   lemma_id: number,
   due_date: Date,
-  last_trial: null | Trial,
+  last_trial: null | T,
 }
+
+export type CommonCardDescriptor = GenericCardDescriptor<GenericTrial>;
+
+export type TrialType = "ct" | "cc" | "cz" | "show";
+
+export type Trial = GenericTrial & {
+  trial_type: TrialType,
+}
+
+export type CardDescriptor = GenericCardDescriptor<Trial>
+
+export type MetadataTrial = GenericTrial & {
+  metadata_field: string,
+}
+
+export type MetadataCardDescriptor = GenericCardDescriptor<MetadataTrial>;
 
 export const EASINESS_DAYS = [
   0,

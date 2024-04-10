@@ -7,7 +7,7 @@ import {
 import "../static/scss/main.scss";
 import {LoggedInUserState} from "./LoggedInPage";
 import LanguageChooser from "./LanguageChooser";
-import Dashboard from "./Dashboard";
+import Dashboard from "./dashboard/Dashboard";
 import LoggedInPage from "./LoggedInPage";
 import AddDocument from "./AddDocument";
 import Document from "./Document";

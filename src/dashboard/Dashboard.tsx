@@ -1,122 +1,25 @@
 import React, { Component } from "react";
 import {Link} from "react-router-dom";
-import {Bar, Pie} from "react-chartjs-2";
 import {
-    Chart as ChartJS,
-    ArcElement,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend,
-} from 'chart.js';
-import {CardDescriptor, DailySummary, EASINESS_DAYS, Language, Trial, Document} from "./models";
+    CardDescriptor,
+    DailySummary,
+    Language,
+    Trial,
+    Document,
+    MetadataCardDescriptor,
+    CommonCardDescriptor,
+} from "../models";
+import {ISODate} from "./shared";
+import ProjectionBarChart from "./ProjectionBarChart";
+import EasinessPieChart from "./EasinessPieChart";
 
-ChartJS.register(
-    ArcElement,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend
-);
+const DutchLanguageId = 1;
 
-const easinessColor = (easiness: number) => `hsl(${easiness*35}, 80%, 80%)`;
-
-function getUTCToday() {
-    const today = new Date();
-    today.setUTCHours(0);
-    today.setUTCMinutes(0);
-    today.setUTCSeconds(0);
-    today.setMilliseconds(0);
-    return today;
+const metadataFields: {[language_id: number]: string[]} = {
+    [DutchLanguageId]: ["gender"],
 }
 
-const millisecondsInDay = 1000*60*60*24;
-
-function addDays(d: Date, days: number) {
-    return new Date(d.getTime() + days*millisecondsInDay);
-}
-
-function ISODate(d: Date) {
-    return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
-}
-
-function ProjectionBarChart(props: {card_descriptors: CardDescriptor[]}) {
-    const {card_descriptors} = props;
-
-    const today = getUTCToday();
-    const lookahead = 30;
-    const days = Array.from(Array(lookahead).keys()).map(n => addDays(today, n + 1));
-
-    const labels = days.map(d => `${d.getUTCMonth() + 1}-${d.getUTCDate()}`)
-
-    const datasets = EASINESS_DAYS.map((num_days, easiness) => ({
-        label: `After ${num_days} days`,
-        data: days.map(d => card_descriptors.filter(c => ((c.last_trial?.easiness === easiness) && (c.due_date.getTime() === d.getTime()))).length),
-        backgroundColor: easinessColor(easiness),
-    }))
-
-    return <Bar data={{labels, datasets}} options={{
-        responsive: true,
-        aspectRatio: 3.5,
-        plugins: {
-            legend: {
-                position: 'top' as const,
-            },
-            title: {
-                display: true,
-                text: 'Projected words due',
-            },
-        },
-        scales: {
-            x: {
-                stacked: true,
-            },
-            y: {
-                stacked: true,
-            },
-        },
-    }}/>;
-}
-
-function EasinessPieChart(props: {card_descriptors: CardDescriptor[]}) {
-    const { card_descriptors } = props;
-
-    const labels = EASINESS_DAYS.map(days => `${days} days`);
-    const colors = EASINESS_DAYS.map((_, easiness) => easinessColor(easiness));
-    const data = EASINESS_DAYS.map((_, easiness) => card_descriptors.filter(c => c.last_trial?.easiness === easiness).length);
-
-    const dataset = {
-        labels,
-        datasets: [
-            {
-                label: '# of Words',
-                data,
-                backgroundColor: colors,
-                borderColor: colors,
-                borderWidth: 0,
-            },
-        ],
-    };
-
-    return <Pie data={dataset} options={{
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top' as const,
-            },
-            title: {
-                display: true,
-                text: 'Easiness of words',
-            },
-        },
-    }}/>;
-}
-
-type ModalType = "details" | "history" | "share" | "reading_history";
+type ModalType = "details" | "history" | "share" | "reading_history" | "gender_details" | "gender_history";
 
 type History = {
     summaries: DailySummary[],
@@ -150,9 +53,15 @@ type Props = {
 
 type State = {
     card_descriptors?: CardDescriptor[],
+    metadata_card_descriptors: {
+        [metadata_field: string]: MetadataCardDescriptor[],
+    },
     modal_type: ModalType | null,
     history?: History,
     reading_history?: ReadingHistory,
+    metadata_history: {
+        [metadata_field: string]: DailySummary[],
+    },
 }
 
 export default class Dashboard extends Component<Props, State> {
@@ -160,6 +69,8 @@ export default class Dashboard extends Component<Props, State> {
         super(props);
         this.state = {
             modal_type: null,
+            metadata_card_descriptors: {},
+            metadata_history: {},
         };
     }
 
@@ -169,7 +80,21 @@ export default class Dashboard extends Component<Props, State> {
             .then(data => this.setState({card_descriptors: data.map((descriptor: any) => ({
                     ...descriptor,
                     due_date: new Date(descriptor.due_date),
-                }))}))
+                }))}));
+
+        (metadataFields[this.props.current_language.id] || []).forEach((field) => {
+            fetch(`/api/playing_metadata?language_id=${this.props.current_language.id}&metadata_field=${field}`)
+                .then(res => res.json())
+                .then(data => this.setState({
+                    metadata_card_descriptors: {
+                        ...this.state.metadata_card_descriptors,
+                        [field]: data.map((descriptor: any) => ({
+                            ...descriptor,
+                            due_date: new Date(descriptor.due_date),
+                        })),
+                    }
+                }));
+        })
     }
 
     getHistory() {
@@ -204,6 +129,21 @@ export default class Dashboard extends Component<Props, State> {
         return null;
     }
 
+    getMetadataHistory(metadata_field: string) {
+        if (this.state.metadata_history[metadata_field] !== undefined) {
+            return this.state.metadata_history[metadata_field];
+        }
+
+        fetch(`/api/metadata_history?language_id=${this.props.current_language.id}&metadata_field=${metadata_field}`)
+            .then(res => res.json())
+            .then(data => this.setState({
+                metadata_history: {
+                    [metadata_field]: data.summaries.map((summary: any) => ({...summary, date: new Date(summary.date)})),
+                }
+            }))
+        return null;
+    }
+
     closeX() {
         return (
             <div className="close" onClick={() => this.setState({modal_type: null})}>
@@ -212,9 +152,7 @@ export default class Dashboard extends Component<Props, State> {
         );
     }
 
-    cardDetailPane() {
-        const {card_descriptors} = this.state;
-
+    genericCardDetailPane(card_descriptors: undefined | CommonCardDescriptor[]) {
         if (card_descriptors === undefined) {
             return null;
         }
@@ -238,14 +176,16 @@ export default class Dashboard extends Component<Props, State> {
         );
     }
 
-    historyModal() {
-        const history = this.getHistory();
+    cardDetailPane() {
+        return this.genericCardDetailPane(this.state.card_descriptors);
+    }
 
-        if (history === null) {
-            return null;
-        }
+    metadataCardDetailPane(metadata_field: string) {
+        return this.genericCardDetailPane(this.state.metadata_card_descriptors[metadata_field]);
+    }
 
-        const totalCards = history.summaries.reduce(
+    genericHistoryModal(summaries: DailySummary[]) {
+        const totalCards = summaries.reduce(
             (total, summary) => (total + summary.new_lemma_trials + summary.review_trials),
             0,
         )
@@ -269,7 +209,7 @@ export default class Dashboard extends Component<Props, State> {
                         <div className="col-2"><p>Total cards</p></div>
                     </div>
 
-                    {history.summaries.map(summary => (
+                    {summaries.map(summary => (
                         <div className="row" key={summary.date.getTime()}>
                             <div className="col-4">
                                 <p>{ISODate(summary.date)}</p>
@@ -291,6 +231,26 @@ export default class Dashboard extends Component<Props, State> {
                 </div>
             </div>
         );
+    }
+
+    historyModal() {
+        const history = this.getHistory();
+
+        if (history === null) {
+            return null;
+        }
+
+        return this.genericHistoryModal(history.summaries);
+    }
+
+    metadataHistoryModal(metadata_field: string) {
+        const summaries = this.getMetadataHistory(metadata_field);
+
+        if (summaries === null) {
+            return null;
+        }
+
+        return this.genericHistoryModal(summaries);
     }
 
     shareModal() {
@@ -394,6 +354,10 @@ export default class Dashboard extends Component<Props, State> {
                 return this.shareModal();
             case "reading_history":
                 return this.readingHistoryModal();
+            case "gender_details":
+                return this.metadataCardDetailPane("gender");
+            case "gender_history":
+                return this.metadataHistoryModal("gender")
             case null:
                 return null;
         }
@@ -403,10 +367,21 @@ export default class Dashboard extends Component<Props, State> {
         if (this.props.current_language.name === "Indonesian") {
             return null;
         } else if (this.props.current_language.name === "Dutch") {
+            const gender_card_descriptors = this.state.metadata_card_descriptors["gender"];
+
+            if (gender_card_descriptors === undefined) {
+                return null;
+            }
+
+            const seen_cards = gender_card_descriptors.filter(card => card.last_trial !== null);
+            const now = new Date();
+            const due_cards = seen_cards.filter(card => card.due_date < now);
+
             return <>
                 <div className="col-12">
                     <p>
-                        You can learn Dutch noun genders, too!
+                        Learning gender for {seen_cards.length}/{gender_card_descriptors.length} added words.
+                        {' '}{due_cards.length} cards ready for review.
                     </p>
                 </div>
                 <div className="col-6">
@@ -422,6 +397,16 @@ export default class Dashboard extends Component<Props, State> {
                             Learn gender of new nouns
                         </div>
                     </Link>
+                </div>
+                <div className="col-6">
+                    <div className="big button" onClick={() => this.setState({modal_type: "gender_details"})}>
+                        Show details
+                    </div>
+                </div>
+                <div className="col-6">
+                    <div className="big button" onClick={() => this.setState({modal_type: "gender_history"})}>
+                        See history
+                    </div>
                 </div>
             </>;
         } else {

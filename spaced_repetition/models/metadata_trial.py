@@ -1,9 +1,6 @@
 import datetime
-from typing import Callable
 from django.db import models
 from django.core import validators
-from .language import LANGUAGE_IDS
-from .lemma import Lemma
 from .lemma_add import LemmaAdd
 from .trial import EASINESS_DAYS
 
