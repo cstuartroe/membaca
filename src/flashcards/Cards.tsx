@@ -81,7 +81,10 @@ export default class Cards extends Component<Props, State> {
         const { cards, trial_results } = this.state;
         trial_results.push(correct);
         if (!correct) {
-            cards.push(card);
+            cards.push({
+                ...card,
+                recommended_easiness: 1,
+            });
         }
         this.setState({
             index: this.state.index + 1,
