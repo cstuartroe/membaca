@@ -230,7 +230,7 @@ class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssig
                 {this.state.suggestions.map((lemma, i) => (
                     <div
                         key={i}
-                        className="lemma"
+                        className="lemma lemma-suggestion"
                         style={{cursor: "pointer"}}
                         onClick={() => this.submitLemma({lemma_id: lemma.id})}
                     >
