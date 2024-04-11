@@ -13,8 +13,8 @@ export function ProgressBar(props: {numerator: number, denominator: number}) {
     );
 }
 
-export function SummarySlide(props: {trial_results: boolean[], isNew: boolean, lemmas: Lemma[]}) {
-    const {trial_results, isNew, lemmas} = props;
+export function SummarySlide(props: {trial_results: boolean[], isNew: boolean, lemmas: Lemma[], more: boolean}) {
+    const {trial_results, isNew, lemmas, more} = props;
 
     const num_correct = trial_results.reduce((sum, correct, _) => sum + (correct ? 1 : 0), 0);
 
@@ -34,11 +34,11 @@ export function SummarySlide(props: {trial_results: boolean[], isNew: boolean, l
                     "{lemma.translation}"
                 </div>
             ))}
-            <a href={window.location.href}>
+            {more && <a href={window.location.href}>
                 <div className="big button">
                     Continue {isNew ? "learning" : "reviewing"}
                 </div>
-            </a>
+            </a>}
             <Link to="/dashboard">
                 <div className="big button">
                     Back to dashboard

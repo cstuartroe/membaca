@@ -45,6 +45,7 @@ class CardInfo:
 class CardSet:
     lemmas: list[Lemma]
     cards: list[CardInfo]
+    more: bool
 
     def to_json(self):
         return {
@@ -56,6 +57,7 @@ class CardSet:
                 card.to_json()
                 for card in self.cards
             ],
+            "more": self.more,
         }
 
 
@@ -123,6 +125,10 @@ def get_cloze_card(lemma: Lemma, recommended_easiness: int, playing_lemmas: list
     )
 
 
+NEW_CARDS_COUNT = 5
+REVIEW_CARDS_COUNT = 10
+
+
 class NewCardsView(CardsView):
     @transaction.atomic
     def get_cards(self, user: User, language_id: int) -> CardSet:
@@ -135,7 +141,8 @@ class NewCardsView(CardsView):
             if lemma_info.last_trial is None
         ]
         new_lemmas.sort(key=lambda lemma_info: lemma_info.due_date)
-        new_lemmas = new_lemmas[:5]
+        more = len(new_lemmas) > NEW_CARDS_COUNT
+        new_lemmas = new_lemmas[:NEW_CARDS_COUNT]
         random.shuffle(new_lemmas)
 
         cards: list[CardInfo] = []
@@ -164,6 +171,7 @@ class NewCardsView(CardsView):
         return CardSet(
             lemmas=[l.lemma for l in new_lemmas],
             cards=cards,
+            more=more,
         )
 
 
@@ -187,7 +195,8 @@ class ReviewCardsView(CardsView):
             if lemma_info.last_trial is not None and (lemma_info.last_trial.due_date() <= today)
         ]
         review_lemmas.sort(key=lambda lemma_info: (lemma_info.last_trial.easiness, lemma_info.due_date))
-        review_lemmas = review_lemmas[:10]
+        more = len(review_lemmas) > REVIEW_CARDS_COUNT
+        review_lemmas = review_lemmas[:REVIEW_CARDS_COUNT]
         random.shuffle(review_lemmas)
 
         cards: list[CardInfo] = []
@@ -218,5 +227,6 @@ class ReviewCardsView(CardsView):
         return CardSet(
             lemmas=[l.lemma for l in review_lemmas],
             cards=cards,
+            more=more,
         )
 

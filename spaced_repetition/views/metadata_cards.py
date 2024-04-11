@@ -27,6 +27,21 @@ class MetadataCardInfo:
 
 
 @dataclass
+class MetadataCardSet:
+    cards: list[MetadataCardInfo]
+    more: bool
+
+    def to_json(self):
+        return {
+            "cards": [
+                card.to_json()
+                for card in self.cards
+            ],
+            "more": self.more,
+        }
+
+
+@dataclass
 class PlayingMetadataInfo:
     lemma: Lemma
     last_trial: Optional[MetadataTrial]
@@ -79,47 +94,49 @@ def get_playable_metadata_infos(user: User, language_id: int, metadata_field: st
 class MetadataCardsView(View):
     @logged_in
     def get(self, request: HttpRequest):
-        cards = self.get_cards(
+        card_set = self.get_cards(
             user=request.user,
             language_id=int(request.GET.get("language_id")),
             metadata_field=request.GET.get("metadata_field"),
         )
-        return JsonResponse(
-            data=[
-                card.to_json()
-                for card in cards
-            ],
-            safe=False
-        )
+        return JsonResponse(card_set.to_json())
 
-    def get_cards(self, user: User, language_id: int, metadata_field: str) -> list[MetadataCardInfo]:
+    def get_cards(self, user: User, language_id: int, metadata_field: str) -> MetadataCardSet:
         raise NotImplemented
+
+
+NEW_CARDS_COUNT = 5
+REVIEW_CARDS_COUNT = 10
 
 
 class NewMetadataCardsView(MetadataCardsView):
     @transaction.atomic
-    def get_cards(self, user: User, language_id: int, metadata_field: str) -> list[MetadataCardInfo]:
+    def get_cards(self, user: User, language_id: int, metadata_field: str) -> MetadataCardSet:
         infos = get_playable_metadata_infos(user, language_id, metadata_field)
         unplayed_metadata_infos = [
             info
             for info in infos
             if info.last_trial is None
         ]
-        lemmas_to_play = [info.lemma for info in unplayed_metadata_infos[:5]]
+        more = len(unplayed_metadata_infos) > NEW_CARDS_COUNT
+        lemmas_to_play = [info.lemma for info in unplayed_metadata_infos[:NEW_CARDS_COUNT]]
         evaluator = METADATA_FIELD_EVALUATORS[language_id][metadata_field]
-        return [
-            MetadataCardInfo(
-                lemma=lemma,
-                choices=evaluator.choices(lemma),
-                recommended_easiness=1,
-            )
-            for lemma in lemmas_to_play
-        ]
+        return MetadataCardSet(
+            cards=[
+                MetadataCardInfo(
+                    lemma=lemma,
+                    choices=evaluator.choices(lemma),
+                    recommended_easiness=1,
+                )
+                for lemma in lemmas_to_play
+            ],
+            more=more,
+        )
 
 
 class ReviewMetadataCardsView(MetadataCardsView):
     @transaction.atomic
-    def get_cards(self, user: User, language_id: int, metadata_field: str) -> list[MetadataCardInfo]:
+    def get_cards(self, user: User, language_id: int, metadata_field: str) -> MetadataCardSet:
         infos = get_playable_metadata_infos(user, language_id, metadata_field)
         today = datetime.date.today()
         review_metadata_info = [
@@ -127,13 +144,17 @@ class ReviewMetadataCardsView(MetadataCardsView):
             for info in infos
             if (info.last_trial is not None) and (info.due_date <= today)
         ]
-        infos_to_play = review_metadata_info[:10]
+        more = len(review_metadata_info) > REVIEW_CARDS_COUNT
+        infos_to_play = review_metadata_info[:REVIEW_CARDS_COUNT]
         evaluator = METADATA_FIELD_EVALUATORS[language_id][metadata_field]
-        return [
-            MetadataCardInfo(
-                lemma=info.lemma,
-                choices=evaluator.choices(info.lemma),
-                recommended_easiness=min(MAX_EASINESS, info.last_trial.easiness + 1)
-            )
-            for info in infos_to_play
-        ]
+        return MetadataCardSet(
+            cards=[
+                MetadataCardInfo(
+                    lemma=info.lemma,
+                    choices=evaluator.choices(info.lemma),
+                    recommended_easiness=min(MAX_EASINESS, info.last_trial.easiness + 1)
+                )
+                for info in infos_to_play
+            ],
+            more=more,
+        )

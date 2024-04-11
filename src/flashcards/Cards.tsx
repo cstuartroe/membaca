@@ -54,6 +54,7 @@ type Props = {
 type State = {
     lemmas_by_id?: LemmaDict,
     cards: CardInfo[],
+    more: boolean,
     index: number,
     still_showing_new_lemmas: boolean,
     trial_results: boolean[],
@@ -64,6 +65,7 @@ export default class Cards extends Component<Props, State> {
         super(props);
         this.state = {
             cards: [],
+            more: true,
             index: 0,
             still_showing_new_lemmas: props.new,
             trial_results: [],
@@ -226,7 +228,8 @@ export default class Cards extends Component<Props, State> {
                 <SummarySlide
                     trial_results={this.state.trial_results}
                     isNew={this.props.new}
-                    lemmas={[...Object.values(this.state.lemmas_by_id!)].sort((a, b) => a.id - b.id)}/>
+                    lemmas={[...Object.values(this.state.lemmas_by_id!)].sort((a, b) => a.id - b.id)}
+                    more={this.state.more}/>
             );
         }
 

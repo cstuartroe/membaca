@@ -17,6 +17,7 @@ type Props = {
 
 type State = {
     cards?: MetadataCardInfo[],
+    more: boolean,
     index: number,
     still_showing_new: boolean,
     trial_results: boolean[],
@@ -26,6 +27,7 @@ export default class MetadataCards extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
+            more: true,
             index: 0,
             still_showing_new: props.new,
             trial_results: [],
@@ -41,7 +43,7 @@ export default class MetadataCards extends Component<Props, State> {
         const url = this.props.new ? "/api/metadata_cards/new" : "/api/metadata_cards/review";
         fetch(`${url}?language_id=${this.props.language.id}&metadata_field=${this.metadataField()}`)
             .then(res => res.json())
-            .then(data => this.setState({cards: data}))
+            .then(data => this.setState(data))
     }
 
     advance(correct: boolean, card: MetadataCardInfo) {
@@ -142,7 +144,8 @@ export default class MetadataCards extends Component<Props, State> {
                 <SummarySlide
                     trial_results={this.state.trial_results}
                     isNew={this.props.new}
-                    lemmas={this.getLemmas()}/>
+                    lemmas={this.getLemmas()}
+                    more={this.state.more}/>
             );
         }
 
