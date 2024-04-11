@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from .document import Document
 
 
@@ -9,6 +10,19 @@ class Sentence(models.Model):
     translation = models.TextField()
     # URL to an image that will be displayed above the sentence
     image = models.CharField(max_length=256, blank=True)
+
+    class FormatLevel(models.TextChoices):
+        H1 = "h1", _("h1")
+        H2 = "h2", _("h2")
+        H3 = "h3", _("h3")
+        P = "p", _("p")
+        NEW_SECTION = "ns", _("new section")
+
+    format_level = models.CharField(
+        max_length=2,
+        choices=FormatLevel.choices,
+        default=FormatLevel.P,
+    )
 
     class Meta:
         constraints = [
@@ -32,4 +46,5 @@ class Sentence(models.Model):
             "text": self.text,
             "translation": self.translation,
             "image": self.image or None,
+            "format_level": self.format_level,
         }

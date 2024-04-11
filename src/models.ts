@@ -34,11 +34,14 @@ export type Document = {
   sentences?: Sentence[],
 }
 
+export type FormatLevel = "h1" | "h2" | "h3" | "p" | "ns";
+
 export type Sentence = {
   id: number,
   text: string,
   translation: string,
   image: string | null,
+  format_level: FormatLevel,
 }
 
 export type Substring = {

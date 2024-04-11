@@ -540,7 +540,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
     render() {
         const [substring_elements, any_unassigned] = this.substringElements();
 
-        return <div className="document-sentence">
+        return <div className={`document-sentence format-level-${this.props.sentence.format_level}`}>
             {this.checkBox(!any_unassigned)}
             {substring_elements}
         </div>;
@@ -600,7 +600,9 @@ class _Document extends Component<Props, State> {
                             <DocumentSentence sentence={sentence} language={this.props.language}/>
                         </div>
                         <div className="col-6 col-md-4">
-                            <div className="document-translation">{sentence.translation}</div>
+                            <div className={`document-translation format-level-${sentence.format_level}`}>
+                                {sentence.translation}
+                            </div>
                         </div>
                     </div>
                 ))}

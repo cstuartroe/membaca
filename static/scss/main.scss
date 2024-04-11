@@ -39,8 +39,29 @@ input, textarea, p, .document-sentence, .document-translation {
 
 $document_font_size: 1.75vh;
 
-.document-sentence, .document-translation, .label {
+.format-level-p, .format-level-ns, .label {
   font-size: $document_font_size;
+}
+
+.format-level-ns {
+  padding-top: 2vh;
+  margin-top: 2vh;
+  border-top: $border;
+}
+
+.format-level-h1 {
+  font-size: 3.5vh;
+  padding-top: 2vh;
+}
+
+.format-level-h2 {
+  font-size: 2.75vh;
+  padding-top: 2vh;
+}
+
+.format-level-h3 {
+  font-size: 2.25vh;
+  padding-top: 2vh;
 }
 
 .purple {
@@ -97,6 +118,8 @@ $sentence_checkbox_width: 2vh;
 .sentence-checkbox {
   display: inline-block;
   width: $sentence_checkbox_width;
+  font-size: $document_font_size;
+  color: $dark_grey;
 }
 
 
