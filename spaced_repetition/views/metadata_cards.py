@@ -127,7 +127,7 @@ class ReviewMetadataCardsView(MetadataCardsView):
             for info in infos
             if (info.last_trial is not None) and (info.due_date <= today)
         ]
-        infos_to_play = review_metadata_info[:5]
+        infos_to_play = review_metadata_info[:10]
         evaluator = METADATA_FIELD_EVALUATORS[language_id][metadata_field]
         return [
             MetadataCardInfo(
