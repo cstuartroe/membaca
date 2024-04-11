@@ -3,7 +3,7 @@ import {ArcElement, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearS
 import {Bar} from "react-chartjs-2";
 import React from "react";
 
-import {getUTCToday, addDays, easinessColor} from "./shared";
+import {getUTCToday, addDays, EASINESS_COLORS} from "./shared";
 
 ChartJS.register(
     ArcElement,
@@ -27,7 +27,7 @@ export default function ProjectionBarChart(props: {card_descriptors: CommonCardD
     const datasets = EASINESS_DAYS.map((num_days, easiness) => ({
         label: `After ${num_days} days`,
         data: days.map(d => card_descriptors.filter(c => ((c.last_trial?.easiness === easiness) && (c.due_date.getTime() === d.getTime()))).length),
-        backgroundColor: easinessColor(easiness),
+        backgroundColor: EASINESS_COLORS[easiness],
     }))
 
     return <Bar data={{labels, datasets}} options={{

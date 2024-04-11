@@ -1,6 +1,8 @@
 const millisecondsInDay = 1000*60*60*24;
 
-export const easinessColor = (easiness: number) => `hsl(${easiness*35}, 80%, 80%)`;
+const EASINESS_HUES = [0, 30, 60, 120, 175, 205, 240, 290];
+
+export const EASINESS_COLORS = EASINESS_HUES.map(hue => `hsl(${hue}, 80%, 80%)`);
 
 export function getUTCToday() {
     const today = new Date();

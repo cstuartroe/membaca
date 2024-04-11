@@ -3,7 +3,7 @@ import {ArcElement, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearS
 import {Pie} from "react-chartjs-2";
 import React from "react";
 
-import {easinessColor} from "./shared";
+import {EASINESS_COLORS} from "./shared";
 
 ChartJS.register(
     ArcElement,
@@ -19,7 +19,7 @@ export default function EasinessPieChart(props: {card_descriptors: CommonCardDes
     const { card_descriptors } = props;
 
     const labels = EASINESS_DAYS.map(days => `${days} days`);
-    const colors = EASINESS_DAYS.map((_, easiness) => easinessColor(easiness));
+    const colors = EASINESS_DAYS.map((_, easiness) => EASINESS_COLORS[easiness]);
     const data = EASINESS_DAYS.map((_, easiness) => card_descriptors.filter(c => c.last_trial?.easiness === easiness).length);
 
     const dataset = {
