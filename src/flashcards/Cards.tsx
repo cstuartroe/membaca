@@ -201,7 +201,11 @@ export default class Cards extends Component<Props, State> {
                         </span>
                     );
                 } else {
-                    sentenceWithUnderscores.push("\uff3f\uff3f")
+                    sentenceWithUnderscores.push(
+                        <span style={{whiteSpace: "nowrap"}}>
+                            {"\uff3f\uff3f"}
+                        </span>
+                    );
                 }
                 prevEnd = substring.end;
             });
