@@ -497,17 +497,29 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                             </span>
                         );
                     default:
-                        return (
-                            <span
-                                className={classNames('assigned_word', extra_classnames)}
-                                {...props}
-                            >
-                                {substring_text}
-                                {actually_expand && (
-                                    <LemmaDisplayCard word_in_sentence={words[word_index]}/>
-                                )}
-                            </span>
-                        );
+                        const className = classNames('assigned_word', extra_classnames);
+
+                        if (actually_expand) {
+                            return (
+                                <span className={className} {...props}>
+                                    <a
+                                        href={`/admin/spaced_repetition/wordinsentence/${words[word_index].id}/change/`}
+                                        target="_blank"
+                                    >
+                                        {substring_text}
+                                    </a>
+                                    {actually_expand && (
+                                        <LemmaDisplayCard word_in_sentence={words[word_index]}/>
+                                    )}
+                                </span>
+                            );
+                        } else {
+                            return (
+                                <span className={className} {...props}>
+                                    {substring_text}
+                                </span>
+                            );
+                        }
                 }
             }
         });
