@@ -24,4 +24,4 @@ class LemmaView(View):
             lemma.set_metadata_field("gender", gender)
 
         lemma.save()
-        return HttpResponse(200)
+        return HttpResponse(status=200)

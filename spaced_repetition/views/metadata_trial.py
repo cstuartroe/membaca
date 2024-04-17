@@ -29,4 +29,4 @@ class MetadataTrialView(View):
     @parse_post
     def post(self, request: HttpRequest, post_data: dict):
         create_metadata_trial(request.user, post_data)
-        return HttpResponse(200)
+        return HttpResponse(status=200)

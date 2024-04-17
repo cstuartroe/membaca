@@ -18,4 +18,4 @@ class ChooseLanguageView(View):
         user_settings.current_language = Language.objects.get(id=post_data["language"])
         user_settings.save()
 
-        return HttpResponse(200)
+        return HttpResponse(status=200)

@@ -13,7 +13,7 @@ def parse_post(post_method):
 def logged_in(method):
     def logged_in_method(self, request: HttpRequest, *args, **kwargs):
         if not request.user.is_active:
-            return HttpResponse(403)
+            return HttpResponse(status=403)
 
         return method(self, request, *args, **kwargs)
 
@@ -23,7 +23,7 @@ def logged_in(method):
 def admin_only(method):
     def admin_only_method(self, request: HttpRequest, *args, **kwargs):
         if not request.user.is_superuser:
-            return HttpResponse(403)
+            return HttpResponse(status=403)
 
         return method(self, request, *args, **kwargs)
 

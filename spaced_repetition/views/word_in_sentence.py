@@ -77,4 +77,4 @@ class WordInSentenceView(View):
     @parse_post
     def post(self, _request: HttpRequest, post_data):
         create_word_in_sentence(post_data)
-        return HttpResponse(200)
+        return HttpResponse(status=200)

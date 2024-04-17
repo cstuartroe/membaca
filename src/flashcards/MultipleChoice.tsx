@@ -45,12 +45,14 @@ type MultipleChoiceProps = {
 type MultipleChoiceState = {
     choice?: string,
     easiness?: number,
+    error: boolean,
 }
 
 export default class MultipleChoice extends Component<MultipleChoiceProps, MultipleChoiceState> {
     constructor(props: MultipleChoiceProps) {
         super(props);
         this.state = {
+            error: false,
         }
     }
 
@@ -59,7 +61,7 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
     }
 
     componentDidUpdate(prevProps: Readonly<MultipleChoiceProps>, prevState: Readonly<MultipleChoiceState>, snapshot?: any) {
-        if (this.state.easiness !== undefined) {
+        if (this.state.easiness !== undefined && !this.state.error) {
             this.submitTrial();
         }
     }
@@ -79,8 +81,12 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
             .then(res => {
                 if (res.ok) {
                     this.props.advance(this.correct());
+                    this.setState({error: false})
+                } else {
+                    this.setState({error: true, easiness: undefined});
                 }
             })
+            .catch(_ => this.setState({error: true, easiness: undefined}));
     }
 
     answerChoiceButtons() {
@@ -88,6 +94,7 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
             {this.props.choices.map(choice => {
                 const correct = choice === this.props.correct_answer;
                 const showColor = this.state.choice !== undefined;
+                console.log(choice);
                 return (
                     <div className="col-6" key={choice}>
                         <div
@@ -124,7 +131,7 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
             <ChooseEasiness
                 lemma={this.props.lemma}
                 recommended_easiness={this.props.recommended_easiness}
-                setEasiness={easiness => this.setState({easiness})}/>
+                setEasiness={easiness => this.setState({easiness, error: false})}/>
         );
     }
 
@@ -145,6 +152,9 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
             <>
                 {this.props.question(reveal_answer)}
                 {this.mainContent()}
+                {this.state.error && (
+                    <div style={{color: "red"}}>An error occurred.</div>
+                )}
             </>
         );
     }

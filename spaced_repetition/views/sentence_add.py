@@ -37,4 +37,4 @@ class SentenceAddView(View):
     @parse_post
     def post(self, request: HttpRequest, post_data):
         add_sentence(post_data["sentence_id"], request.user.id)
-        return HttpResponse(200)
+        return HttpResponse(status=200)
