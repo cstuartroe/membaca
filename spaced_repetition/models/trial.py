@@ -28,9 +28,9 @@ class Trial(models.Model):
         CHOOSE_CITATION_FORM = "cc", _("choose citation form")
 
     time_created = models.DateTimeField()
-    lemma_add = models.ForeignKey(LemmaAdd, on_delete=models.CASCADE)
+    lemma_add = models.ForeignKey(LemmaAdd, on_delete=models.PROTECT)
     trial_type = models.CharField(max_length=2, choices=TrialType.choices)
-    sentence = models.ForeignKey(Sentence, null=True, blank=True, on_delete=models.CASCADE)
+    sentence = models.ForeignKey(Sentence, null=True, blank=True, on_delete=models.PROTECT)
     choices = models.CharField(max_length=256)
     choice = models.CharField(max_length=128)
     correct = models.BooleanField()
