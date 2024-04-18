@@ -192,17 +192,17 @@ export default class Cards extends Component<Props, State> {
             let sentenceWithUnderscores: React.ReactNode[] = [];
             let prevEnd = 0;
 
-            card.answer.substrings.forEach(substring => {
+            card.answer.substrings.forEach((substring, i) => {
                 sentenceWithUnderscores.push(card.answer.sentence.text.substring(prevEnd, substring.start));
                 if (reveal_answer) {
                     sentenceWithUnderscores.push(
-                        <span style={{textDecoration: "underline"}}>
+                        <span style={{textDecoration: "underline"}} key={i}>
                             {card.answer.sentence.text.substring(substring.start, substring.end)}
                         </span>
                     );
                 } else {
                     sentenceWithUnderscores.push(
-                        <span style={{whiteSpace: "nowrap"}}>
+                        <span style={{whiteSpace: "nowrap"}} key={i}>
                             {"\uff3f\uff3f"}
                         </span>
                     );
