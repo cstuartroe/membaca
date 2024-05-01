@@ -4,7 +4,7 @@ from .document import Document
 
 
 class Sentence(models.Model):
-    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    document = models.ForeignKey(Document, on_delete=models.PROTECT)
     position = models.IntegerField()
     text = models.TextField()
     translation = models.TextField()

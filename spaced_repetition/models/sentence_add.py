@@ -4,8 +4,8 @@ from .sentence import Sentence
 
 
 class SentenceAdd(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    sentence = models.ForeignKey(Sentence, on_delete=models.CASCADE, related_name='adds')
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    sentence = models.ForeignKey(Sentence, on_delete=models.PROTECT, related_name='adds')
     time_created = models.DateTimeField()
 
     class Meta:

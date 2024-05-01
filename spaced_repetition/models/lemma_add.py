@@ -4,8 +4,8 @@ from .lemma import Lemma
 
 
 class LemmaAdd(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    lemma = models.ForeignKey(Lemma, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    lemma = models.ForeignKey(Lemma, on_delete=models.PROTECT)
     time_created = models.DateTimeField()
 
     class Meta:

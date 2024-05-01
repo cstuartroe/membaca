@@ -7,7 +7,7 @@ from .trial import EASINESS_DAYS
 
 class MetadataTrial(models.Model):
     time_created = models.DateTimeField()
-    lemma_add = models.ForeignKey(LemmaAdd, on_delete=models.CASCADE)
+    lemma_add = models.ForeignKey(LemmaAdd, on_delete=models.PROTECT)
     metadata_field = models.CharField(max_length=16)
     choices = models.CharField(max_length=256)
     choice = models.CharField(max_length=128)

@@ -4,7 +4,7 @@ from .collection import Collection
 
 class Document(models.Model):
     title = models.CharField(max_length=128)
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
     order = models.IntegerField()
     link = models.CharField(max_length=256)
 

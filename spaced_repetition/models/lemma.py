@@ -57,7 +57,7 @@ def is_metadata_playable(language_id: int, metadata_field: str, metadata_value: 
 
 
 class Lemma(models.Model):
-    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    language = models.ForeignKey(Language, on_delete=models.PROTECT)
     citation_form = models.CharField(max_length=32)
     translation = models.CharField(max_length=128)
 
