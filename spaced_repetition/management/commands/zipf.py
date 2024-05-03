@@ -42,14 +42,6 @@ class Command(BaseCommand):
         print(f"{len(lemmas_counts_list)} total lemmas.")
         print(f"{total_count} total words.")
 
-        num_hapax_legomena = len([
-            count
-            for _, count in lemmas_counts_list
-            if count == 1
-        ])
-        print(f"{num_hapax_legomena} hapax legomena.")
-        print()
-
         coverage_i = 0
         cumulative_coverage = 0
         for i, (_, count) in enumerate(lemmas_counts_list[::-1]):
@@ -68,7 +60,11 @@ class Command(BaseCommand):
         for _, count in lemmas_counts_list:
             count_counts[count] += 1
 
-        plt.plot(*zip(*sorted(list(count_counts.items()))))
+        print(f"{count_counts[1]} hapax legomena.")
+        print({count: count_counts[count] for count in range(1, 21)})
+        print()
+
+        plt.plot(*zip(*sorted(list(count_counts.items()))), marker='o')
         plt.xscale('log')
         plt.yscale('log')
         plt.show()
