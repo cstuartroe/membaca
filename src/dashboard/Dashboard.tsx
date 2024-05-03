@@ -39,6 +39,7 @@ type DocumentHistory = {
 type WordsOnDay = {
     date: Date,
     words: number,
+    new_lemmas: number,
 }
 
 type ReadingHistory = {
@@ -325,17 +326,25 @@ export default class Dashboard extends Component<Props, State> {
                             <h2>Your reading history</h2>
                         </div>
 
-                        <div className="col-6 col-md-3 offset-md-3"><p>Date</p></div>
-                        <div className="col-6"><p>Words read</p></div>
+                        <div className="col-3"><p>Date</p></div>
+                        <div className="col-3"><p>Words read</p></div>
+                        <div className="col-3"><p>New lemmas</p></div>
+                        <div className="col-3"><p>Percent new</p></div>
                     </div>
 
                     {reading_history.words_read_by_day.map(day => (
                         <div className="row" key={day.date.getTime()}>
-                            <div className="col-6 col-md-3 offset-md-3">
+                            <div className="col-3">
                                 <p>{ISODate(day.date)}</p>
                             </div>
-                            <div className="col-6">
+                            <div className="col-3">
                                 <p>{day.words}</p>
+                            </div>
+                            <div className="col-3">
+                                <p>{day.new_lemmas}</p>
+                            </div>
+                            <div className="col-3">
+                                <p>{Math.round(100*day.new_lemmas/day.words)}%</p>
                             </div>
                         </div>
                     ))}

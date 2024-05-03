@@ -21,6 +21,7 @@ class DocumentReadingHistory:
 class ReadingHistory:
     document_histories: dict[int, DocumentReadingHistory]
     words_read_by_day: dict[datetime.date, int]
+    new_lemmas_by_day: dict[datetime.date, int]
 
 
 @transaction.atomic
@@ -28,7 +29,9 @@ def get_reading_history(user: User, language_id: int):
     history = ReadingHistory(
         document_histories={},
         words_read_by_day={},
+        new_lemmas_by_day={},
     )
+    seen_lemma_ids = set()
 
     sentence_adds = (
         SentenceAdd.objects
@@ -51,8 +54,15 @@ def get_reading_history(user: User, language_id: int):
         history.document_histories[document_id].sentences_read += 1
 
         date = sentence_add.time_created.date()
-        words_in_sentence = WordInSentence.objects.filter(sentence_id=sentence_add.sentence_id).count()
-        history.words_read_by_day[date] = history.words_read_by_day.get(date, 0) + words_in_sentence
+        words_in_sentence = list(WordInSentence.objects.filter(sentence_id=sentence_add.sentence_id))
+        history.words_read_by_day[date] = history.words_read_by_day.get(date, 0) + len(words_in_sentence)
+
+        if date not in history.new_lemmas_by_day:
+            history.new_lemmas_by_day[date] = 0
+        for word in words_in_sentence:
+            if (word.lemma_id is not None) and (word.lemma_id not in seen_lemma_ids):
+                seen_lemma_ids.add(word.lemma_id)
+                history.new_lemmas_by_day[date] += 1
 
     return history
 
@@ -79,6 +89,7 @@ class ReadingHistoryView(View):
             words_read_by_day_json.append({
                 "date": date,
                 "words": words,
+                "new_lemmas": history.new_lemmas_by_day[date],
             })
         words_read_by_day_json.sort(key=lambda d: d["date"], reverse=True)
 
