@@ -244,6 +244,8 @@ $sentence_checkbox_width: 2vh;
   background-color: white;
   border: $border;
   border-radius: 10px;
+  max-height: 80vh;
+  overflow-y: scroll;
 
   .close {
     position: absolute;
