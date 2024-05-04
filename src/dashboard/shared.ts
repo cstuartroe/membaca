@@ -1,6 +1,6 @@
 const millisecondsInDay = 1000*60*60*24;
 
-const EASINESS_HUES = [0, 30, 60, 120, 175, 205, 240, 290];
+const EASINESS_HUES = [290, 0, 30, 60, 120, 175, 205, 240];
 
 export const EASINESS_COLORS = EASINESS_HUES.map(hue => `hsl(${hue}, 80%, 80%)`);
 
