@@ -61,6 +61,19 @@ class Command(BaseCommand):
             count_counts[count] += 1
 
         print(f"{count_counts[1]} hapax legomena.")
+
+        hapax_legomena_percent = (
+            (len(lemmas_counts_list) - count_counts[1])
+            / len(lemmas_counts_list)
+        )
+        print(f"{round(100*hapax_legomena_percent)}% of lemmas are hapax legomena")
+
+        coverage_without_hapax_legomena = (
+            (total_count - count_counts[1])
+            / total_count
+        )
+        print(f"{100*coverage_without_hapax_legomena:.1f}% coverage without hapax legomena")
+
         print({count: count_counts[count] for count in range(1, 21)})
         print()
 
