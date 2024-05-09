@@ -7,7 +7,7 @@ class WordInSentence(models.Model):
     # Null lemma should be used for proper nouns, numbers written
     # as digits, etc.
     lemma = models.ForeignKey(Lemma, on_delete=models.PROTECT, null=True)
-    sentence = models.ForeignKey(Sentence, on_delete=models.PROTECT)
+    sentence = models.ForeignKey(Sentence, on_delete=models.PROTECT, related_name='words_in_sentence')
 
     def to_json(self) -> dict:
         return {
