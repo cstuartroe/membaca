@@ -26,6 +26,9 @@ def add_sentence(sentence_id: int, user_id: int):
 
     words = WordInSentence.objects.filter(sentence_id=sentence_id)
     for word in words:
+        if word.lemma is None:
+            continue
+
         if word.lemma_id in seen_lemma_ids:
             rows = list(LemmaAdd.objects.filter(lemma_id=word.lemma_id, user_id=user_id))
             if len(rows) == 0:
