@@ -83,6 +83,12 @@ export type MetadataTrial = GenericTrial & {
 
 export type MetadataCardDescriptor = GenericCardDescriptor<MetadataTrial>;
 
+export type MetadataPlaySummary = {
+  playing_metadata: MetadataCardDescriptor[],
+  not_playable: number,
+  unannotated: number,
+}
+
 export const EASINESS_DAYS = [
   0,
   1,

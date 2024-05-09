@@ -7,7 +7,7 @@ import {
     Trial,
     Document,
     MetadataCardDescriptor,
-    CommonCardDescriptor,
+    CommonCardDescriptor, MetadataPlaySummary,
 } from "../models";
 import {ISODate} from "./shared";
 import ProjectionBarChart from "./ProjectionBarChart";
@@ -54,8 +54,8 @@ type Props = {
 
 type State = {
     card_descriptors?: CardDescriptor[],
-    metadata_card_descriptors: {
-        [metadata_field: string]: MetadataCardDescriptor[],
+    metadata_play_summaries: {
+        [metadata_field: string]: MetadataPlaySummary,
     },
     modal_type: ModalType | null,
     history?: History,
@@ -70,7 +70,7 @@ export default class Dashboard extends Component<Props, State> {
         super(props);
         this.state = {
             modal_type: null,
-            metadata_card_descriptors: {},
+            metadata_play_summaries: {},
             metadata_history: {},
         };
     }
@@ -87,12 +87,15 @@ export default class Dashboard extends Component<Props, State> {
             fetch(`/api/playing_metadata?language_id=${this.props.current_language.id}&metadata_field=${field}`)
                 .then(res => res.json())
                 .then(data => this.setState({
-                    metadata_card_descriptors: {
-                        ...this.state.metadata_card_descriptors,
-                        [field]: data.map((descriptor: any) => ({
-                            ...descriptor,
-                            due_date: new Date(descriptor.due_date),
-                        })),
+                    metadata_play_summaries: {
+                        ...this.state.metadata_play_summaries,
+                        [field]: {
+                            ...data,
+                            playing_metadata: data.playing_metadata.map((descriptor: any) => ({
+                                ...descriptor,
+                                due_date: new Date(descriptor.due_date),
+                            })),
+                        },
                     }
                 }));
         })
@@ -182,7 +185,7 @@ export default class Dashboard extends Component<Props, State> {
     }
 
     metadataCardDetailPane(metadata_field: string) {
-        return this.genericCardDetailPane(this.state.metadata_card_descriptors[metadata_field]);
+        return this.genericCardDetailPane(this.state.metadata_play_summaries[metadata_field].playing_metadata);
     }
 
     genericHistoryModal(summaries: DailySummary[]) {
@@ -376,11 +379,13 @@ export default class Dashboard extends Component<Props, State> {
         if (this.props.current_language.name === "Indonesian") {
             return null;
         } else if (this.props.current_language.name === "Dutch") {
-            const gender_card_descriptors = this.state.metadata_card_descriptors["gender"];
+            const gender_play_summary = this.state.metadata_play_summaries["gender"];
 
-            if (gender_card_descriptors === undefined) {
+            if (gender_play_summary === undefined) {
                 return null;
             }
+
+            const gender_card_descriptors = gender_play_summary.playing_metadata;
 
             const seen_cards = gender_card_descriptors.filter(card => card.last_trial !== null);
             const now = new Date();
@@ -390,7 +395,9 @@ export default class Dashboard extends Component<Props, State> {
                 <div className="col-12">
                     <p>
                         Learning gender for {seen_cards.length}/{gender_card_descriptors.length} added words.
-                        {' '}{due_cards.length} cards ready for review.
+                        {' '}{due_cards.length} cards ready for review.{' '}
+                        {gender_play_summary.not_playable} lemmas are not gendered.{' '}
+                        {gender_play_summary.unannotated} lemmas still lack gender annotation.
                     </p>
                 </div>
                 <div className="col-6">
