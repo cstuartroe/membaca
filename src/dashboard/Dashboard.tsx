@@ -443,6 +443,7 @@ export default class Dashboard extends Component<Props, State> {
             d.sentences_read < d.total_sentences
         )).slice(0, 3)
         const total_words_read = reading_history.words_read_by_day.reduce((n, d) => n + d.words, 0);
+        const total_lemmas = reading_history.words_read_by_day.reduce((n, d) => n + d.new_lemmas, 0);
 
         return (
             <div className="col-12 col-md-6 offset-md-3">
@@ -487,7 +488,7 @@ export default class Dashboard extends Component<Props, State> {
                     </div>
                     <div className="col-12">
                         <p>
-                            Read {total_words_read} words so far.
+                            Read {total_words_read} words so far, including {total_lemmas} distinct lemmas.
                         </p>
                     </div>
                     {continue_reading_document_histories.map(h => (
