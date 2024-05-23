@@ -38,9 +38,14 @@ input, textarea, p, .document-sentence, .document-translation {
 }
 
 $document_font_size: 1.75vh;
+$lemma_card_top_padding: .5vh;
 
 .format-level-p, .format-level-ns, .label {
   font-size: $document_font_size;
+
+  .lemma-card {
+    top: calc($document_font_size + $lemma_card_top_padding);
+  }
 }
 
 .format-level-ns {
@@ -49,19 +54,37 @@ $document_font_size: 1.75vh;
   border-top: $border;
 }
 
+$h1_size: 3.5vh;
+
 .format-level-h1 {
-  font-size: 3.5vh;
+  font-size: $h1_size;
   padding-top: 2vh;
+
+  .lemma-card {
+    top: calc($h1_size + $lemma_card_top_padding);
+  }
 }
+
+$h2_size: 2.75vh;
 
 .format-level-h2 {
-  font-size: 2.75vh;
+  font-size: $h2_size;
   padding-top: 2vh;
+
+  .lemma-card {
+    top: calc($h2_size + $lemma_card_top_padding);
+  }
 }
 
+$h3_size: 2.25vh;
+
 .format-level-h3 {
-  font-size: 2.25vh;
+  font-size: $h3_size;
   padding-top: 2vh;
+
+  .lemma-card {
+    top: calc($h3_size + $lemma_card_top_padding);
+  }
 }
 
 .purple {
@@ -157,7 +180,6 @@ $sentence_checkbox_width: 2vh;
 
   .lemma-card {
     position: absolute;
-    top: calc($document_font_size + .5vh);
     left: 0;
     padding: 5px;
     border-radius: 3px;

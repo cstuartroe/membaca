@@ -415,8 +415,16 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
             if (word_index === undefined) {
                 return substring_text;
             } else {
-                const onMouseEnter = () => this.setState({focused: {word_index, expanded: false}});
-                const onMouseLeave = () => this.setState({focused: undefined});
+                const onMouseEnter = () => {
+                    if (!focused?.expanded) {
+                        this.setState({focused: {word_index, expanded: false}});
+                    }
+                }
+                const onMouseLeave = () => {
+                    if (!focused?.expanded) {
+                        this.setState({focused: undefined});
+                    }
+                }
                 const onMouseDown = () => this.setState({selection_start_substring: i});
                 const onMouseUp = () => {
                     const selection_object = window.getSelection();
@@ -437,9 +445,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                         }
                     }
 
-                    if (!substring_expanded) {
-                        this.setState({focused: {word_index, expanded: true}});
-                    }
+                    this.setState({focused: {word_index, expanded: !substring_expanded}});
                 }
 
                 const actually_expand = substring_expanded && (assigned_substring.substring === words[word_index].substrings[0]);
@@ -453,7 +459,6 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                 };
 
                 const props = {
-                    key: i,
                     onMouseEnter,
                     onMouseLeave,
                     onMouseDown,
@@ -466,9 +471,9 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                         return (
                             <span
                                 className={classNames('unassigned_word', extra_classnames)}
-                                {...props}
+                                key={i}
                             >
-                                {substring_text}
+                                <span {...props}>{substring_text}</span>
                                 {actually_expand && (
                                     <LemmaAssignmentCard
                                         search_string={search_string}
