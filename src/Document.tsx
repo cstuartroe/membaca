@@ -202,7 +202,7 @@ class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssig
 
         return (
             <div className="lemma-card">
-                <div className="close" onClick={() => this.props.close()}>X</div>
+                <div className="close" onClick={() => this.props.close()}><div>X</div></div>
                 <div className="button"
                      style={{marginBottom: "5px"}}
                      onClick={() => this.setState({
@@ -438,7 +438,6 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                 const onMouseDown = () => this.setState({selection_start_substring: i});
                 const onMouseUp = () => {
                     const selection_object = window.getSelection();
-
                     if (this.state.selection_start_substring !== undefined && selection_object !== null) {
                         const start = substrings[this.state.selection_start_substring].substring.start + selection_object.anchorOffset;
                         const end = assigned_substring.substring.start + selection_object.focusOffset;
@@ -446,6 +445,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                         if (start !== end) {
                             this.setState({
                                 assigning_substrings: this.state.assigning_substrings.concat([{start, end}]),
+                                expanded_word_index: fetched_words.length, // assigning substring index
                             });
                             return;
                         }
