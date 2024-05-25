@@ -43,6 +43,7 @@ type MultipleChoiceProps = {
 }
 
 type MultipleChoiceState = {
+    show_answers: boolean,
     choice?: string,
     easiness?: number,
     error: boolean,
@@ -52,6 +53,7 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
     constructor(props: MultipleChoiceProps) {
         super(props);
         this.state = {
+            show_answers: false,
             error: false,
         }
     }
@@ -94,7 +96,6 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
             {this.props.choices.map(choice => {
                 const correct = choice === this.props.correct_answer;
                 const showColor = this.state.choice !== undefined;
-                console.log(choice);
                 return (
                     <div className="col-6" key={choice}>
                         <div
@@ -135,8 +136,23 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
         );
     }
 
+    showAnswersButton() {
+        return (
+            <div className="col-12">
+                <div
+                    className="big button"
+                    onClick={() => this.setState({show_answers: true})}
+                >
+                    Show answers
+                </div>
+            </div>
+        );
+    }
+
     mainContent() {
-        if (this.state.choice === undefined || (!this.correct() && this.state.easiness === undefined)) {
+        if (!this.state.show_answers) {
+            return this.showAnswersButton();
+        } else if (this.state.choice === undefined || (!this.correct() && this.state.easiness === undefined)) {
             return this.answerChoiceButtons();
         } else if (this.state.easiness === undefined) {
             return this.easinessButtons();
