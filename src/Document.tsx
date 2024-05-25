@@ -601,7 +601,7 @@ class _Document extends Component<Props, State> {
         const first_not_fully_assigned = this.firstNumberNotFullyAssigned();
 
         return (
-            <div className="col-12">
+            <div className="col-12" style={{paddingBottom: "40vh"}}>
                 <a href={link}>
                     <h2>{title}</h2>
                 </a>
