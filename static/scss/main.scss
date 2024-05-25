@@ -155,7 +155,7 @@ $sentence_checkbox_width: 2vh;
   cursor: pointer;
 
   &.assigned_word {
-    &.focused {
+    &:hover, &.expanded {
       background-color: $light_green;
     }
   }
@@ -163,7 +163,7 @@ $sentence_checkbox_width: 2vh;
   &.assigning_word {
     background-color: $light_yellow;
 
-    &.focused {
+    &:hover, &.expanded {
       background-color: $light_green;
     }
   }
@@ -171,7 +171,7 @@ $sentence_checkbox_width: 2vh;
   &.unassigned_word {
     background-color: $light_grey;
 
-    &.focused {
+    &:hover, &.expanded {
       background-color: $light_green;
     }
   }
@@ -182,6 +182,7 @@ $sentence_checkbox_width: 2vh;
     position: absolute;
     left: 0;
     padding: 5px;
+    padding-top: 3.5vh;
     border-radius: 3px;
     border: $border;
     background-color: white;
@@ -268,16 +269,16 @@ $sentence_checkbox_width: 2vh;
   border-radius: 10px;
   max-height: 80vh;
   overflow-y: scroll;
+}
 
-  .close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-    z-index: 1;
-    font-family: "Madimi One", sans-serif;
-    font-size: 2vh;
-  }
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  z-index: 1;
+  font-family: "Madimi One", sans-serif;
+  font-size: 2vh;
 }
 
 .indonesian-e-picker {

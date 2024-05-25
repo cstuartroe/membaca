@@ -29,6 +29,7 @@ const SKIP_CHARACTERS: string[] = [
 
 type LemmaDisplayCardProps = {
     word_in_sentence: WordInSentence,
+    close: () => void,
 }
 
 type LemmaDisplayCardState = {
@@ -73,6 +74,7 @@ class LemmaDisplayCard extends Component<LemmaDisplayCardProps, LemmaDisplayCard
 
         return (
             <div className="lemma-card">
+                <div className="close" onClick={() => this.props.close()}>X</div>
                 <div className="lemma">
                     {content}
                 </div>
@@ -86,6 +88,7 @@ type LemmaAssignmentCardProps = {
     language: Language,
     word_in_sentence: WordInSentence,
     loadSentence: () => void,
+    close: () => void,
 }
 
 type LemmaAssignmentCardState = {
@@ -163,6 +166,7 @@ class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssig
         if (new_lemma !== undefined) {
             return (
                 <div className="lemma-card">
+                    <div className="close" onClick={() => this.props.close()}>X</div>
                     <div className="label">Citation form</div>
                     <div>
                         <input
@@ -198,6 +202,7 @@ class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssig
 
         return (
             <div className="lemma-card">
+                <div className="close" onClick={() => this.props.close()}>X</div>
                 <div className="button"
                      style={{marginBottom: "5px"}}
                      onClick={() => this.setState({
@@ -248,6 +253,8 @@ class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssig
 type DocumentSentenceProps = {
     sentence: Sentence,
     language: Language,
+    expand_first_unassigned: boolean,
+    mark_fully_assigned: () => void,
 }
 
 type AssignedSubstring = {
@@ -260,10 +267,10 @@ type DocumentSentenceState = {
     fetched_words?: WordInSentence[],
     assigning_substrings: Substring[],
     selection_start_substring?: number,
-    focused?: {
-        word_index: number,
-        expanded: boolean,
-    },
+
+    // undefined if it has not been set since the sentence was loaded, so first unassigned may be expanded
+    // null if a popover was just closed, so that definitely no word is expanded
+    expanded_word_index: number | undefined | null,
 }
 
 class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentenceState> {
@@ -272,18 +279,28 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
         this.state = {
             added: false,
             assigning_substrings: [],
+            expanded_word_index: undefined,
         };
     }
 
     loadSentence() {
         fetch(`/api/sentence/${this.props.sentence.id}`)
             .then(res => res.json())
-            .then(data => this.setState({
-                added: data.added,
-                fetched_words: data.words,
-                assigning_substrings: [],
-                focused: undefined,
-            }));
+            .then(data => {
+                this.setState(
+                    {
+                        added: data.added,
+                        fetched_words: data.words,
+                        assigning_substrings: [],
+                        expanded_word_index: undefined,
+                    },
+                )
+
+                const [_, any_unassigned] = this.substringElements();
+                if (!any_unassigned) {
+                    this.props.mark_fully_assigned();
+                }
+            })
     }
 
     add() {
@@ -300,7 +317,7 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
 
     deriveWordsAndSubstrings(): [WordInSentence[], AssignedSubstring[]] {
         const { text } = this.props.sentence;
-        const { fetched_words, assigning_substrings, focused } = this.state;
+        const { fetched_words, assigning_substrings } = this.state;
 
         const words: WordInSentence[] = [];
         words.push(...fetched_words!);
@@ -393,9 +410,9 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
     }
 
     substringElements(): [React.ReactNode[], boolean] {
-        const { language } = this.props;
+        const { language, expand_first_unassigned } = this.props;
         const { text } = this.props.sentence;
-        const { focused, fetched_words } = this.state;
+        const { expanded_word_index, fetched_words } = this.state;
 
         if (fetched_words === undefined) {
             return [[text], true];
@@ -405,26 +422,19 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
 
         let any_unassigned = false;
 
+        const close = () => this.setState({
+            expanded_word_index: null,
+        })
+
         const elements = substrings.map((assigned_substring, i) => {
             const substring_text = text.substring(assigned_substring.substring.start, assigned_substring.substring.end);
-            const substring_focused = focused?.word_index === assigned_substring.word_index;
-            const substring_expanded = substring_focused && !!focused?.expanded;
+            let substring_expanded = expanded_word_index === assigned_substring.word_index;
 
             const {word_index} = assigned_substring;
 
             if (word_index === undefined) {
                 return substring_text;
             } else {
-                const onMouseEnter = () => {
-                    if (!focused?.expanded) {
-                        this.setState({focused: {word_index, expanded: false}});
-                    }
-                }
-                const onMouseLeave = () => {
-                    if (!focused?.expanded) {
-                        this.setState({focused: undefined});
-                    }
-                }
                 const onMouseDown = () => this.setState({selection_start_substring: i});
                 const onMouseUp = () => {
                     const selection_object = window.getSelection();
@@ -436,92 +446,82 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                         if (start !== end) {
                             this.setState({
                                 assigning_substrings: this.state.assigning_substrings.concat([{start, end}]),
-                                focused: {
-                                    word_index: fetched_words.length, // assigning word index
-                                    expanded: false,
-                                },
                             });
                             return;
                         }
                     }
 
-                    this.setState({focused: {word_index, expanded: !substring_expanded}});
+                    if (!substring_expanded) {
+                        this.setState({
+                            expanded_word_index: word_index,
+                        })
+                    }
                 }
 
-                const actually_expand = substring_expanded && (assigned_substring.substring === words[word_index].substrings[0]);
+                const actually_expand = () => substring_expanded && (assigned_substring.substring === words[word_index].substrings[0]);
                 const search_string = words[word_index].substrings.map(substring => (
                     text.substring(substring.start, substring.end))).join(' ');
 
-                const extra_classnames = {
+                const extra_classnames = () => ({
                     sentence_word: true,
-                    focused: substring_focused,
                     expanded: substring_expanded,
-                };
+                });
 
                 const props = {
-                    onMouseEnter,
-                    onMouseLeave,
                     onMouseDown,
                     onMouseUp,
                 }
 
+                const getWordAndAssignmentCard = (className: string) => {
+                    substring_expanded = substring_expanded || (expanded_word_index === undefined && !any_unassigned && expand_first_unassigned);
+                    any_unassigned = true;
+
+                    return (
+                        <span
+                            className={classNames(className, extra_classnames())}
+                            key={i}
+                        >
+                            <span {...props}>{substring_text}</span>
+                            {actually_expand() && (
+                                <LemmaAssignmentCard
+                                    search_string={search_string}
+                                    language={language}
+                                    loadSentence={() => this.loadSentence()}
+                                    word_in_sentence={words[word_index]}
+                                    close={close}
+                                />
+                            )}
+                        </span>
+                    );
+                };
+
                 switch (words[word_index].lemma_id) {
                     case UNASSIGNED_LEMMA_ID:
-                        any_unassigned = true;
-                        return (
-                            <span
-                                className={classNames('unassigned_word', extra_classnames)}
-                                key={i}
-                            >
-                                <span {...props}>{substring_text}</span>
-                                {actually_expand && (
-                                    <LemmaAssignmentCard
-                                        search_string={search_string}
-                                        language={language}
-                                        loadSentence={() => this.loadSentence()}
-                                        word_in_sentence={words[word_index]}
-                                    />
-                                )}
-                            </span>
-                        );
-                    case ASSIGNING_LEMMA_ID:
-                        any_unassigned = true;
-                        return (
-                            <span
-                                className={classNames('assigning_word', extra_classnames)}
-                                {...props}
-                            >
-                                {substring_text}
-                                {actually_expand && (
-                                    <LemmaAssignmentCard
-                                        search_string={search_string}
-                                        language={language}
-                                        loadSentence={() => this.loadSentence()}
-                                        word_in_sentence={words[word_index]}
-                                    />
-                                )}
-                            </span>
-                        );
-                    default:
-                        const className = classNames('assigned_word', extra_classnames);
+                        return getWordAndAssignmentCard('unassigned_word')
 
-                        if (actually_expand) {
+                    case ASSIGNING_LEMMA_ID:
+                        return getWordAndAssignmentCard('assigning_word');
+
+                    default:
+                        const className = classNames('assigned_word', extra_classnames());
+
+                        if (actually_expand()) {
                             return (
-                                <span className={className} {...props}>
+                                <span className={className} key={i} {...props}>
                                     <a
                                         href={`/admin/spaced_repetition/wordinsentence/${words[word_index].id}/change/`}
                                         target="_blank"
                                     >
                                         {substring_text}
                                     </a>
-                                    {actually_expand && (
-                                        <LemmaDisplayCard word_in_sentence={words[word_index]}/>
+                                    {actually_expand() && (
+                                        <LemmaDisplayCard word_in_sentence={words[word_index]} close={close}/>
                                     )}
                                 </span>
                             );
                         } else {
                             return (
-                                <span className={className} {...props}>
+                                <span className={className} key={i} {...props}>
                                     {substring_text}
                                 </span>
                             );
@@ -575,12 +575,14 @@ type State = {
     title?: string,
     link?: string,
     sentences?: Sentence[],
+    sentence_indices_marked_fully_assigned: Set<number>,
 }
 
 class _Document extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
+            sentence_indices_marked_fully_assigned: new Set<number>(),
         };
     }
 
@@ -594,8 +596,19 @@ class _Document extends Component<Props, State> {
             }))
     }
 
+    firstNumberNotFullyAssigned() {
+        let i = 0;
+        while (true) {
+            if (!this.state.sentence_indices_marked_fully_assigned.has(i)) {
+                return i;
+            }
+            i++;
+        }
+    }
+
     render() {
         const { title, link, sentences } = this.state;
+        const first_not_fully_assigned = this.firstNumberNotFullyAssigned();
 
         return (
             <div className="col-12">
@@ -615,7 +628,17 @@ class _Document extends Component<Props, State> {
                             </div>
                         ) : null}
                         <div className="col-6 col-md-4 offset-md-2">
-                            <DocumentSentence sentence={sentence} language={this.props.language}/>
+                            <DocumentSentence
+                                sentence={sentence}
+                                language={this.props.language}
+                                expand_first_unassigned={i == first_not_fully_assigned}
+                                mark_fully_assigned={() => {
+                                    this.state.sentence_indices_marked_fully_assigned.add(i)
+                                    this.setState({
+                                        sentence_indices_marked_fully_assigned: this.state.sentence_indices_marked_fully_assigned,
+                                    });
+                                }}
+                            />
                         </div>
                         <div className="col-6 col-md-4">
                             <div className={`document-translation format-level-${sentence.format_level}`}>
