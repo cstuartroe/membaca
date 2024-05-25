@@ -294,12 +294,13 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
                         assigning_substrings: [],
                         expanded_word_index: undefined,
                     },
+                    () => {
+                        const [_, any_unassigned] = this.substringElements();
+                        if (!any_unassigned) {
+                            this.props.mark_fully_assigned();
+                        }
+                    }
                 )
-
-                const [_, any_unassigned] = this.substringElements();
-                if (!any_unassigned) {
-                    this.props.mark_fully_assigned();
-                }
             })
     }
 
