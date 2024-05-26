@@ -40,6 +40,7 @@ type MultipleChoiceProps = {
     recommended_easiness: number,
     mark_easiness: boolean,
     advance: (correct: boolean) => void,
+    hide_answers: boolean,
 }
 
 type MultipleChoiceState = {
@@ -53,7 +54,7 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
     constructor(props: MultipleChoiceProps) {
         super(props);
         this.state = {
-            show_answers: false,
+            show_answers: !props.hide_answers,
             error: false,
         }
     }

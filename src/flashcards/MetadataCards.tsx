@@ -130,6 +130,7 @@ export default class MetadataCards extends Component<Props, State> {
                         <div className="translation">{card.lemma.translation}</div>
                     </div>
                 </>}
+                hide_answers={false}
             />
         );
     }

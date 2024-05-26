@@ -168,6 +168,7 @@ export default class Cards extends Component<Props, State> {
                 recommended_easiness={card.recommended_easiness}
                 mark_easiness={this.shouldMarkEasiness()}
                 advance={correct => this.advance(correct, card)}
+                hide_answers={true}
             />
         );
     }
