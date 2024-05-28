@@ -80,8 +80,13 @@ type LemmaAssignmentCardProps = {
     close: () => void,
 }
 
+type SearchResult = {
+    lemma: Lemma,
+    exact_match: boolean,
+}
+
 type LemmaAssignmentCardState = {
-    suggestions: Lemma[],
+    suggestions: SearchResult[],
     search_string: string,
     new_lemma?: Lemma,
     status: "unsubmitted" | "submitting" | "submitted",
@@ -222,15 +227,15 @@ class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssig
                             search_string: e.target.value,
                         })}/>
                 </div>
-                {this.state.suggestions.map((lemma, i) => (
+                {this.state.suggestions.map((result, i) => (
                     <div
                         key={i}
-                        className="lemma lemma-suggestion"
+                        className={classNames("lemma", "lemma-suggestion", {"exact-match": result.exact_match})}
                         style={{cursor: "pointer"}}
-                        onClick={() => this.submitLemma({lemma_id: lemma.id})}
+                        onClick={() => this.submitLemma({lemma_id: result.lemma.id})}
                     >
-                        <div className="citation-form">{lemma.citation_form}</div>
-                        <div className="translation">"{lemma.translation}"</div>
+                        <div className="citation-form">{result.lemma.citation_form}</div>
+                        <div className="translation">"{result.lemma.translation}"</div>
                     </div>
                 ))}
             </div>

@@ -1,8 +1,23 @@
+from dataclasses import dataclass
 from django.views import View
 from django.http import HttpRequest, JsonResponse
+from spaced_repetition.models.lemma import Lemma
 from spaced_repetition.models.word import Word
 from .ajax_utils import logged_in
 from spaced_repetition.utils.string_utils import levenshtein
+
+
+@dataclass
+class SearchResult:
+    lemma: Lemma
+    exact_match: bool
+
+    def to_json(self):
+        return {
+            "lemma": self.lemma.to_json(),
+            "exact_match": self.exact_match,
+        }
+
 
 
 class SearchLemmasView(View):
@@ -19,21 +34,26 @@ class SearchLemmasView(View):
         words_and_edit_distance.sort(key=lambda pair: pair[1])
 
         lemma_ids = set()
-        lemmas = []
-        for word, _ in words_and_edit_distance:
+        results: list[SearchResult] = []
+        for word, edit_distance in words_and_edit_distance:
             if word.lemma_id in lemma_ids:
                 continue
 
             lemma_ids.add(word.lemma_id)
-            lemmas.append(word.lemma)
+            results.append(
+                SearchResult(
+                    lemma=word.lemma,
+                    exact_match=(edit_distance == 0),
+                ),
+            )
 
-            if len(lemmas) == num_results:
+            if len(results) == num_results:
                 break
 
         return JsonResponse(
             data=[
-                lemma.to_json()
-                for lemma in lemmas
+                result.to_json()
+                for result in results
             ],
             safe=False,
         )

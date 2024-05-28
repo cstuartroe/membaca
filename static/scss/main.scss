@@ -204,6 +204,10 @@ $sentence_checkbox_width: 2vh;
       &.lemma-suggestion {
         border: 1px solid white;
 
+        &.exact-match {
+          background-color: $light_green;
+        }
+
         &:hover {
           border: $border;
           border-radius: 3px;
