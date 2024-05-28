@@ -28,7 +28,7 @@ class MetadataValueEvaluator:
 class DutchGenderEvaluator(MetadataValueEvaluator):
     @staticmethod
     def playable(value: str) -> bool:
-        if value in ("de", "het"):
+        if value in ("de", "het", "de/het"):
             return True
         elif value in ("-", None):
             return False
@@ -37,7 +37,7 @@ class DutchGenderEvaluator(MetadataValueEvaluator):
 
     @staticmethod
     def choices(_: "Lemma") -> list[str]:
-        return ["de", "het"]
+        return ["de", "het", "de/het"]
 
 
 METADATA_FIELD_EVALUATORS: dict[int, dict[str, MetadataValueEvaluator]] = {

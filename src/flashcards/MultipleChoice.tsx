@@ -30,6 +30,18 @@ function ChooseEasiness(props: {lemma: Lemma, recommended_easiness: number, setE
     );
 }
 
+function numCols(numChoices: number) {
+    switch (numChoices) {
+        case 2:
+        case 4:
+            return 6;
+        case 3:
+            return 4;
+        default:
+            throw "Unexpected number of choices"
+    }
+}
+
 type MultipleChoiceProps = {
     question: (reveal_answer: boolean) => React.ReactNode,
     lemma: Lemma,
@@ -98,7 +110,7 @@ export default class MultipleChoice extends Component<MultipleChoiceProps, Multi
                 const correct = choice === this.props.correct_answer;
                 const showColor = this.state.choice !== undefined;
                 return (
-                    <div className="col-6" key={choice}>
+                    <div className={`col-${numCols(this.props.choices.length)}`} key={choice}>
                         <div
                             className={classNames("big", "button", "unicode", {
                                 correct: showColor && correct,

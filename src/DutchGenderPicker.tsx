@@ -30,7 +30,7 @@ class SingleWordPicker extends Component<SingleWordPickerProps, SingleWordPicker
 
     genderButton(gender: string) {
         return (
-            <div className="col-4">
+            <div className="col-3">
                 <div
                     className={classNames("button", "noto", {correct: this.state.picked_gender === gender})}
                     onClick={() => this.saveGender(gender)}
@@ -53,6 +53,7 @@ class SingleWordPicker extends Component<SingleWordPickerProps, SingleWordPicker
                 <div className="row">
                     {this.genderButton("de")}
                     {this.genderButton("het")}
+                    {this.genderButton("de/het")}
                     {this.genderButton("-")}
                 </div>
             </div>
