@@ -9,7 +9,9 @@ from django.db import transaction
 from google.cloud import translate
 from tqdm import tqdm
 
+from spaced_repetition.models.collection import Collection
 from spaced_repetition.models.document import Document
+from spaced_repetition.models.language import LANGUAGE_IDS
 from spaced_repetition.models.sentence import Sentence
 
 GCLOUD_PROJECT_ID = os.getenv("GCLOUD_PROJECT_ID")
@@ -114,9 +116,68 @@ def parse_kompas(content: str, document_id: int, object_storage_address: str):
         sentence_index += 1
 
 
+def parse_ontdekking(content: str, object_storage_address: str):
+    LINK = "https://www.onlinebibliotheek.nl/catalogus/370837061/de-ontdekking-van-de-hemel-harry-mulisch"
+
+    html_children = []
+
+    matches = re.findall("<html.*?</html>", content, flags=re.DOTALL)
+    for match in matches:
+        soup = bs(match, features="html.parser")
+        html_children += [child for child in soup.body.div.div.children if child.name is not None]
+
+    chapters = []
+
+    for i, child in enumerate(html_children):
+        text = child.text.strip().replace("  ", " ").replace("–", "-")
+        if text == "":
+            continue
+
+        if child.name == "p":
+            if chapters:
+                chapters[-1][1].append(text)
+
+        elif child.name == "h1":
+            if chapters:
+                del chapters[-1][1][-1]
+
+        elif child.name == "h2":
+            chapters.append((text, []))
+
+        else:
+            raise ValueError(f"Unknown child name: {child.name}")
+
+    collection = Collection(
+        title="De ontdekking van hemel",
+        language_id=LANGUAGE_IDS["Dutch"],
+    )
+    collection.save()
+
+    for i, chapter in tqdm(list(enumerate(chapters))):
+        title, sentences = chapter
+
+        document = Document(
+            title=title,
+            collection=collection,
+            order=i+1,
+            link=LINK,
+        )
+        document.save()
+
+        for i, sentence_text in enumerate(sentences):
+            sentence = Sentence(
+                document=document,
+                position=i+1,
+                text=sentence_text,
+                translation="",
+            )
+            sentence.save()
+
+
 PARSING_DISPATCH_TABLE = {
     "tom_poes": parse_tom_poes,
     "kompas": parse_kompas,
+    "de_ontdekking_van_hemel": parse_ontdekking,
 }
 
 
@@ -125,7 +186,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: argparse.ArgumentParser):
         parser.add_argument("source_file", type=str)
-        parser.add_argument('-T', '--title', type=str, required=True)
+        parser.add_argument('-T', '--title', type=str, required=False)
         parser.add_argument('-t', '--type', type=str, choices=list(PARSING_DISPATCH_TABLE.keys()))
         parser.add_argument('-c', '--collection_id', type=int, required=False)
         parser.add_argument('-o', '--object_storage_address', type=str, required=False)
@@ -134,6 +195,19 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with open(options["source_file"], "r") as fh:
             content = fh.read()
+
+        def parse(**kwargs):
+            parse_function = PARSING_DISPATCH_TABLE[options["type"]]
+
+            parse_function(
+                content,
+                object_storage_address=options["object_storage_address"],
+                **kwargs
+            )
+
+        if options["collection_id"] is None:
+            parse()
+            return
 
         num_documents = Document.objects.filter(collection_id=options["collection_id"]).count()
 
@@ -145,10 +219,4 @@ class Command(BaseCommand):
         )
         document.save()
 
-        parse_function = PARSING_DISPATCH_TABLE[options["type"]]
-
-        parse_function(
-            content,
-            document.id,
-            object_storage_address=options["object_storage_address"],
-        )
+        parse(document_id=document.id)
