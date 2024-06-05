@@ -5,7 +5,7 @@ from spaced_repetition.models.language import LANGUAGE_IDS
 
 
 def heaps_law(x: int):
-    return 7*(x**.6)
+    return 5.1*(x**.63)
 
 
 class Command(BaseCommand):
@@ -15,6 +15,9 @@ class Command(BaseCommand):
         parser.add_argument("-l", "--language", required=True)
 
     def handle(self, *args, **options):
+        for word_count in [100000, 250000, 1000000]:
+            print(f"Projected lemma count at {word_count} words read: {round(heaps_law(word_count))}")
+
         lemma_ids = set()
         num_words = 0
         points = []
@@ -34,10 +37,11 @@ class Command(BaseCommand):
 
                 points.append((num_words, len(lemma_ids)))
 
+        actual_num_words, actual_lemmas = points[-1]
+        all_xs = list(range(1, actual_num_words+1))
+        print(f"Projected lemma count at current word count ({actual_num_words}): {round(heaps_law(actual_num_words))}")
+        print(f"Actual lemma count: {actual_lemmas}")
+
         plt.plot(*zip(*points), marker='o')
-
-        max_value = points[-1][0]
-        all_xs = list(range(1, max_value+1))
         plt.plot(all_xs, list(map(heaps_law, all_xs)))
-
         plt.show()
