@@ -106,6 +106,9 @@ def parse_kompas(content: str, document_id: int, object_storage_address: str):
         else:
             continue
 
+        if child.text == "":
+            continue
+
         Sentence(
             document_id=document_id,
             position=sentence_index,
