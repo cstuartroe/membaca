@@ -1,5 +1,7 @@
+import re
 from django.core.management.base import BaseCommand
 from matplotlib import pyplot as plt
+from spaced_repetition.models.collection import Collection
 from spaced_repetition.models.document import Document
 from spaced_repetition.models.language import LANGUAGE_IDS
 
@@ -22,6 +24,9 @@ class Command(BaseCommand):
         num_words = 0
         points = []
 
+        collection_whitespace_word_counts = {}
+        collection_word_counts = {}
+
         for document in (
             Document.objects
             .select_related('collection')
@@ -30,18 +35,29 @@ class Command(BaseCommand):
             .prefetch_related('sentence_set')
             .prefetch_related('sentence_set__words_in_sentence')
         ):
+            collection_whitespace_word_counts[document.collection_id] = collection_whitespace_word_counts.get(document.collection_id, 0)
+            collection_word_counts[document.collection_id] = collection_word_counts.get(document.collection_id, 0)
+
             for sentence in document.sentence_set.order_by('position'):
-                for word in sentence.words_in_sentence.all():
+                collection_whitespace_word_counts[document.collection_id] += len(list(re.findall("[a-zA-Z]+", sentence.text)))
+
+                for word in sentence.words_in_sentence.order_by('id'):
+                    collection_word_counts[document.collection_id] += 1
                     num_words += 1
                     lemma_ids.add(word.lemma_id)
-
-                points.append((num_words, len(lemma_ids)))
+                    points.append((num_words, len(lemma_ids)))
 
         actual_num_words, actual_lemmas = points[-1]
         all_xs = list(range(1, actual_num_words+1))
         print(f"Projected lemma count at current word count ({actual_num_words}): {round(heaps_law(actual_num_words))}")
         print(f"Actual lemma count: {actual_lemmas}")
 
-        plt.plot(*zip(*points), marker='o')
+        for collection_id in collection_word_counts:
+            print()
+            print(f"Collection {Collection.objects.get(id=collection_id).title}:")
+            print(f"{collection_word_counts[collection_id]} words according to annotation.")
+            print(f"{collection_whitespace_word_counts[collection_id]} words according to whitespace.")
+
+        plt.plot(*zip(*points))
         plt.plot(all_xs, list(map(heaps_law, all_xs)))
         plt.show()
