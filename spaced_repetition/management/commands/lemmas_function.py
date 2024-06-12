@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from django.core.management.base import BaseCommand
 from matplotlib import pyplot as plt
 from spaced_repetition.models.collection import Collection
@@ -8,6 +9,14 @@ from spaced_repetition.models.language import LANGUAGE_IDS
 
 def heaps_law(x: int):
     return 5.1*(x**.63)
+
+
+@dataclass
+class CollectionSummary:
+    num_annotated_words: int
+    num_unique_annotated_lemmas: int
+    num_whitespace_words: int
+    num_unique_whitespace_words: int
 
 
 class Command(BaseCommand):
@@ -24,8 +33,7 @@ class Command(BaseCommand):
         num_words = 0
         points = []
 
-        collection_whitespace_word_counts = {}
-        collection_word_counts = {}
+        collection_summaries = {}
 
         for document in (
             Document.objects
@@ -35,28 +43,40 @@ class Command(BaseCommand):
             .prefetch_related('sentence_set')
             .prefetch_related('sentence_set__words_in_sentence')
         ):
-            collection_whitespace_word_counts[document.collection_id] = collection_whitespace_word_counts.get(document.collection_id, 0)
-            collection_word_counts[document.collection_id] = collection_word_counts.get(document.collection_id, 0)
+            document_annotated_word_lemma_ids = []
+            document_whitespace_words = []
 
             for sentence in document.sentence_set.order_by('position'):
-                collection_whitespace_word_counts[document.collection_id] += len(list(re.findall("[a-zA-Z]+", sentence.text)))
+                document_whitespace_words += list(re.findall("\\w+", sentence.text))
 
                 for word in sentence.words_in_sentence.order_by('id'):
-                    collection_word_counts[document.collection_id] += 1
                     num_words += 1
                     lemma_ids.add(word.lemma_id)
                     points.append((num_words, len(lemma_ids)))
+
+                    document_annotated_word_lemma_ids.append(word.lemma_id)
+
+            if document.collection_id not in collection_summaries:
+                collection_summaries[document.collection_id] = CollectionSummary(0, 0, 0, 0)
+
+            summary = collection_summaries[document.collection_id]
+            summary.num_annotated_words += len(document_annotated_word_lemma_ids)
+            summary.num_unique_annotated_lemmas += len(set(document_annotated_word_lemma_ids))
+            summary.num_whitespace_words += len(document_whitespace_words)
+            summary.num_unique_whitespace_words += len(set(document_whitespace_words))
 
         actual_num_words, actual_lemmas = points[-1]
         all_xs = list(range(1, actual_num_words+1))
         print(f"Projected lemma count at current word count ({actual_num_words}): {round(heaps_law(actual_num_words))}")
         print(f"Actual lemma count: {actual_lemmas}")
 
-        for collection_id in collection_word_counts:
+        for collection_id, summary in collection_summaries.items():
             print()
             print(f"Collection {Collection.objects.get(id=collection_id).title}:")
-            print(f"{collection_word_counts[collection_id]} words according to annotation.")
-            print(f"{collection_whitespace_word_counts[collection_id]} words according to whitespace.")
+            print(f"{summary.num_annotated_words} words according to annotation.")
+            print(f"{summary.num_whitespace_words} words according to whitespace.")
+            print(f"{summary.num_unique_annotated_lemmas} unique lemmas according to annotation.")
+            print(f"{summary.num_unique_whitespace_words} unique words according to whitespace.")
 
         plt.plot(*zip(*points))
         plt.plot(all_xs, list(map(heaps_law, all_xs)))
