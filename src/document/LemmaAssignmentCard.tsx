@@ -138,7 +138,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
                          new_lemma: {
                              id: UNASSIGNED_LEMMA_ID,
                              language_id: this.props.language.id,
-                             citation_form: this.props.search_string,
+                             citation_form: this.state.search_string,
                              translation: "",
                              metadata: {},
                          }
