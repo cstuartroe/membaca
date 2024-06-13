@@ -7,9 +7,13 @@ export type User = {
   date_joined: string,
 }
 
+export const LANGUAGE_NAMES = ["Dutch", "Indonesian"] as const;
+
+export type LanguageName = (typeof LANGUAGE_NAMES)[number];
+
 export type Language = {
   id: number,
-  name: string,
+  name: LanguageName,
 }
 
 export type Lemma = {

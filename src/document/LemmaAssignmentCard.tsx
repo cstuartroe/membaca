@@ -2,7 +2,23 @@ import React, {Component} from "react";
 import classNames from "classnames";
 
 import {safePost} from "../ajax_utils";
-import {Language, Lemma, WordInSentence} from "../models";
+import {LanguageName, Language, Lemma, WordInSentence} from "../models";
+
+
+const SearchResources: {[key in LanguageName]: [string, ((s: string) => string)][]} = {
+    "Dutch": [
+        ['Wiktionary', woord => `https://en.wiktionary.org/wiki/${woord}#Dutch`],
+        ['Mijnwoordenboek', woord => `https://www.mijnwoordenboek.nl/vertaal/NL/EN/${woord}`],
+        ['Wikiwoordenboek', woord => `https://nl.wiktionary.org/wiki/${woord}`],
+        ['Google Translate', woord => `https://translate.google.com/?sl=nl&tl=en&text=${woord}&op=translate`]
+    ],
+    "Indonesian": [
+        ['Wiktionary', kata => `https://en.wiktionary.org/wiki/${kata}#Indonesian`],
+        ['Dict.com', kata => `https://www.dict.com/indonesian-english/${kata}`],
+        ['Sederet', kata => `https://sederet.com/translate.php?lang=id_en&q=${kata}`],
+        ['Google Translate', kata => `https://translate.google.com/?sl=nl&tl=en&text=${kata}&op=translate`]
+    ],
+}
 
 
 export const UNASSIGNED_LEMMA_ID = -1;
@@ -96,6 +112,13 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
             return (
                 <div className="lemma-card">
                     <div className="close" onClick={() => this.props.close()}>X</div>
+                    {SearchResources[this.props.language.name].map(([resource_name, resource_link]) => (
+                        <a href={resource_link(new_lemma.citation_form)} key={resource_name} target="_blank">
+                            <div className="button" style={{marginBottom: "5px"}}>
+                                {resource_name}
+                            </div>
+                        </a>
+                    ))}
                     <div className="label">Citation form</div>
                     <div>
                         <input
