@@ -10,7 +10,7 @@ import LanguageChooser from "./LanguageChooser";
 import Dashboard from "./dashboard/Dashboard";
 import LoggedInPage from "./LoggedInPage";
 import AddDocument from "./AddDocument";
-import Document from "./Document";
+import Document from "./document/Document";
 import Collections from "./Collections";
 import {Language, User} from "./models";
 import AdminPowers from "./AdminPowers";

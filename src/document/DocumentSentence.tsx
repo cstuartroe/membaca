@@ -1,14 +1,15 @@
-import React, { Component } from "react";
-import { useParams } from "react-router-dom";
-const classNames = require('classnames');
+import React, {Component} from "react";
+import {faCheck, faEllipsis} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import { faCheck, faEllipsis } from "@fortawesome/free-solid-svg-icons";
-import {Sentence, WordInSentence, Substring, Lemma, Language} from "./models";
-import {safePost} from "./ajax_utils";
+import classNames from "classnames";
+
+import {safePost} from "../ajax_utils";
+import {Language, Sentence, Substring, WordInSentence} from "../models";
+import LemmaDisplayCard from "./LemmaDisplayCard";
+import LemmaAssignmentCard, {UNASSIGNED_LEMMA_ID} from "./LemmaAssignmentCard";
 
 
 const FAKE_WORD_ID = -1;
-const UNASSIGNED_LEMMA_ID = -1;
 const ASSIGNING_LEMMA_ID = -2;
 const SKIP_CHARACTERS: string[] = [
     " ", ".", ",", "!", "?", "\"", "'", ";", "-", "(", ")", "/", ":", "*",
@@ -17,235 +18,7 @@ const SKIP_CHARACTERS: string[] = [
 ];
 
 
-type LemmaDisplayCardProps = {
-    word_in_sentence: WordInSentence,
-    close: () => void,
-}
-
-type LemmaDisplayCardState = {
-    lemma?: Lemma,
-}
-
-class LemmaDisplayCard extends Component<LemmaDisplayCardProps, LemmaDisplayCardState> {
-    constructor(props: LemmaDisplayCardProps) {
-        super(props);
-        this.state = {};
-    }
-
-    componentDidMount() {
-        const { lemma_id } = this.props.word_in_sentence;
-
-        if (lemma_id === null) {
-            return;
-        }
-
-        fetch(`/api/lemma?id=${lemma_id}`)
-            .then(res => res.json())
-            .then(lemma => this.setState({lemma}));
-    }
-
-    render() {
-        const { lemma } = this.state;
-
-        let content: React.ReactNode = null;
-
-        if (this.props.word_in_sentence.lemma_id === null) {
-            content = "No lemma"
-        } else if (lemma !== undefined) {
-            content = <>
-                <div className="citation-form">
-                    <a href={`/admin/spaced_repetition/lemma/${lemma.id}/change/`} target="_blank">
-                        {lemma.citation_form}
-                    </a>
-                </div>
-                <div className="translation">"{lemma.translation}"</div>
-            </>;
-        }
-
-        return (
-            <div className="lemma-card">
-                <div className="close" onClick={() => this.props.close()}>X</div>
-                <div className="lemma">
-                    {content}
-                </div>
-            </div>
-        );
-    }
-}
-
-type LemmaAssignmentCardProps = {
-    search_string: string,
-    language: Language,
-    word_in_sentence: WordInSentence,
-    loadSentence: () => void,
-    close: () => void,
-}
-
-type SearchResult = {
-    lemma: Lemma,
-    exact_match: boolean,
-}
-
-type LemmaAssignmentCardState = {
-    suggestions: SearchResult[],
-    search_string: string,
-    new_lemma?: Lemma,
-    status: "unsubmitted" | "submitting" | "submitted",
-}
-
-class LemmaAssignmentCard extends Component<LemmaAssignmentCardProps, LemmaAssignmentCardState> {
-    constructor(props: LemmaAssignmentCardProps) {
-        super(props);
-        this.state = {
-            suggestions: [],
-            search_string: props.search_string,
-            status: "unsubmitted",
-        }
-    }
-
-    performSearch() {
-        const search_string = this.state.search_string;
-
-        fetch(`/api/search_lemmas?language_id=${this.props.language.id}&q=${search_string}&num_results=5`)
-            .then(res => res.json())
-            .then(suggestions => this.setState({suggestions}));
-    }
-
-    componentDidMount() {
-        this.performSearch()
-    }
-
-    componentDidUpdate(prevProps: Readonly<LemmaAssignmentCardProps>, prevState: Readonly<LemmaAssignmentCardState>, snapshot?: any) {
-        if (prevState.search_string != this.state.search_string) {
-            this.performSearch();
-        }
-    }
-
-    submitNewLemma() {
-        const { new_lemma } = this.state;
-        if (new_lemma === undefined) { return; }
-
-        this.submitLemma({
-            lemma: {
-                citation_form: new_lemma.citation_form,
-                translation: new_lemma.translation,
-            }
-        });
-    }
-
-    submitLemma(data: any) {
-        this.setState({status: "submitting"});
-        safePost(
-            "/api/words_in_sentence",
-            {
-                sentence_id: this.props.word_in_sentence.sentence_id,
-                language_id: this.props.language.id,
-                substrings: this.props.word_in_sentence.substrings,
-                ...data,
-            },
-        ).then(res => {
-            if (res.ok) {
-                this.setState({status: "submitted"});
-                this.props.loadSentence();
-            }
-        })
-    }
-
-    render() {
-        const { new_lemma, status } = this.state;
-
-        if (status === "submitted") {
-            return null;
-        }
-
-        if (new_lemma !== undefined) {
-            return (
-                <div className="lemma-card">
-                    <div className="close" onClick={() => this.props.close()}>X</div>
-                    <div className="label">Citation form</div>
-                    <div>
-                        <input
-                            type="text"
-                            value={new_lemma.citation_form}
-                            onChange={e => this.setState({
-                                new_lemma: {...new_lemma, citation_form: e.target.value},
-                            })}/>
-                    </div>
-                    <div className="label">Translation</div>
-                    <div>
-                        <input
-                            type="text"
-                            value={new_lemma.translation}
-                            onChange={e => this.setState({
-                                new_lemma: {...new_lemma, translation: e.target.value},
-                            })}/>
-                    </div>
-                    <div
-                        className="button"
-                        style={{marginTop: "5px"}}
-                        onClick={() => {
-                            if (status === "unsubmitted") {
-                                this.submitNewLemma();
-                            }
-                        }}
-                    >
-                        {(status === "unsubmitted") ? "Submit" : "..."}
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-            <div className="lemma-card">
-                <div className="close" onClick={() => this.props.close()}><div>X</div></div>
-                <div className="button"
-                     style={{marginBottom: "5px"}}
-                     onClick={() => this.setState({
-                         new_lemma: {
-                             id: UNASSIGNED_LEMMA_ID,
-                             language_id: this.props.language.id,
-                             citation_form: this.props.search_string,
-                             translation: "",
-                             metadata: {},
-                         }
-                     })}
-                >
-                    New lemma
-                </div>
-
-                <div className="button"
-                     style={{marginBottom: "5px"}}
-                     onClick={() => this.submitLemma({})}
-                >
-                    No lemma
-                </div>
-
-                <div>
-                    <input
-                        type="text"
-                        value={this.state.search_string}
-                        onChange={e => this.setState({
-                            search_string: e.target.value,
-                        })}/>
-                </div>
-                {this.state.suggestions.map((result, i) => (
-                    <div
-                        key={i}
-                        className={classNames("lemma", "lemma-suggestion", {"exact-match": result.exact_match})}
-                        style={{cursor: "pointer"}}
-                        onClick={() => this.submitLemma({lemma_id: result.lemma.id})}
-                    >
-                        <div className="citation-form">{result.lemma.citation_form}</div>
-                        <div className="translation">"{result.lemma.translation}"</div>
-                    </div>
-                ))}
-            </div>
-        );
-    }
-}
-
-
-type DocumentSentenceProps = {
+type Props = {
     sentence: Sentence,
     language: Language,
     expand_first_unassigned: boolean,
@@ -257,7 +30,7 @@ type AssignedSubstring = {
     word_index?: number,
 }
 
-type DocumentSentenceState = {
+type State = {
     added: boolean,
     fetched_words?: WordInSentence[],
     assigning_substrings: Substring[],
@@ -268,8 +41,8 @@ type DocumentSentenceState = {
     expanded_word_index: number | undefined | null,
 }
 
-class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentenceState> {
-    constructor(props: DocumentSentenceProps) {
+export default class DocumentSentence extends Component<Props, State> {
+    constructor(props: Props) {
         super(props);
         this.state = {
             added: false,
@@ -559,101 +332,4 @@ class DocumentSentence extends Component<DocumentSentenceProps, DocumentSentence
             {substring_elements}
         </div>;
     }
-}
-
-
-type Props = {
-    documentId: number,
-    language: Language,
-}
-
-type State = {
-    title?: string,
-    link?: string,
-    sentences?: Sentence[],
-    sentence_indices_marked_fully_assigned: Set<number>,
-}
-
-class _Document extends Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        this.state = {
-            sentence_indices_marked_fully_assigned: new Set<number>(),
-        };
-    }
-
-    componentDidMount() {
-        fetch(`/api/document/${this.props.documentId}`)
-            .then(res => res.json())
-            .then(data => this.setState({
-                title: data["title"],
-                link: data["link"],
-                sentences: data["sentences"],
-            }))
-    }
-
-    firstNumberNotFullyAssigned() {
-        let i = 0;
-        while (true) {
-            if (!this.state.sentence_indices_marked_fully_assigned.has(i)) {
-                return i;
-            }
-            i++;
-        }
-    }
-
-    render() {
-        const { title, link, sentences } = this.state;
-        const first_not_fully_assigned = this.firstNumberNotFullyAssigned();
-
-        return (
-            <div className="col-12" style={{paddingBottom: "40vh"}}>
-                <a href={link}>
-                    <h2>{title}</h2>
-                </a>
-                {sentences?.map((sentence, i) => (
-                    <div className="row" key={i} style={{paddingBottom: ".5vh"}}>
-                        {(sentence.image !== null ) ? (
-                            <div className="col-12 col-md-8 offset-md-2" style={{display: "flex"}}>
-                                <img src={sentence.image} style={{
-                                    maxWidth: "100%",
-                                    maxHeight: "30vh",
-                                    margin: "auto",
-                                    padding: "10px 0",
-                                }}/>
-                            </div>
-                        ) : null}
-                        <div className="col-6 col-md-4 offset-md-2">
-                            <DocumentSentence
-                                sentence={sentence}
-                                language={this.props.language}
-                                expand_first_unassigned={i == first_not_fully_assigned}
-                                mark_fully_assigned={() => {
-                                    this.state.sentence_indices_marked_fully_assigned.add(i)
-                                    this.setState({
-                                        sentence_indices_marked_fully_assigned: this.state.sentence_indices_marked_fully_assigned,
-                                    });
-                                }}
-                            />
-                        </div>
-                        <div className="col-6 col-md-4">
-                            <div className={`document-translation format-level-${sentence.format_level}`}>
-                                {sentence.translation}
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    }
-}
-
-export default function Document(props: {language: Language}) {
-    const { documentId } = useParams();
-
-    if (documentId === undefined) {
-        return null;
-    }
-
-    return <_Document documentId={parseInt(documentId)} language={props.language}/>
 }
