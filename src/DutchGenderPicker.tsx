@@ -25,7 +25,11 @@ class SingleWordPicker extends Component<SingleWordPickerProps, SingleWordPicker
                 id: this.props.lemma.id,
                 "metadata:gender": gender,
             }
-        ).then(_ => this.setState({picked_gender: gender}))
+        ).then(res => {
+            if (res.ok) {
+                this.setState({picked_gender: gender})
+            }
+        })
     }
 
     genderButton(gender: string) {
@@ -50,19 +54,36 @@ class SingleWordPicker extends Component<SingleWordPickerProps, SingleWordPicker
                 "{lemma.translation}"
             </div>
             <div className="col-12 col-md-6 offset-md-3">
-                <div className="row">
+            <div className="row">
                     {this.genderButton("de")}
                     {this.genderButton("het")}
                     {this.genderButton("de/het")}
                     {this.genderButton("-")}
                 </div>
             </div>
+            {!this.state.picked_gender && (
+                <>
+                    <div className="col-6" style={{paddingBottom: "20px"}}>
+                        <iframe
+                            src={`https://nl.wiktionary.org/wiki/${lemma.citation_form}`}
+                            width="100%"
+                            height="800px"
+                        />
+                    </div>
+                    <div className="col-6" style={{paddingBottom: "20px"}}>
+                        <iframe
+                            src={`https://www.woorden.org/woord/${lemma.citation_form}`}
+                            width="100%"
+                            height="800px"
+                        />
+                    </div>
+                </>
+            )}
         </div>;
     }
 }
 
-type Props = {
-}
+type Props = {}
 
 type State = {
     lemmas?: Lemma[],
@@ -71,8 +92,7 @@ type State = {
 export default class DutchGenderPicker extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.state = {
-        };
+        this.state = {};
     }
 
 
