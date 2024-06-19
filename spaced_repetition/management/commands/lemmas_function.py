@@ -1,5 +1,4 @@
 import re
-from tqdm import tqdm
 from dataclasses import dataclass
 from django.core.management.base import BaseCommand
 from matplotlib import pyplot as plt
@@ -38,21 +37,27 @@ class Command(BaseCommand):
         collection_whitespace_words = {}
         document_summaries = {}
 
-        for document in tqdm(list(
+        for document in (
             Document.objects
             .select_related('collection')
             .filter(collection__language_id=LANGUAGE_IDS[options["language"]])
             .order_by('id')
             .prefetch_related('sentence_set')
             .prefetch_related('sentence_set__words_in_sentence')
-        )):
+        ):
             document_annotated_word_lemma_ids = []
             document_whitespace_words = []
 
-            for sentence in document.sentence_set.order_by('position'):
+            sentences = list(document.sentence_set.all())
+            sentences.sort(key=lambda s: s.position)
+
+            for sentence in sentences:
                 document_whitespace_words += list(re.findall("\\w+", sentence.text))
 
-                for word in sentence.words_in_sentence.order_by('id'):
+                words = list(sentence.words_in_sentence.all())
+                words.sort(key=lambda w: w.id)
+
+                for word in words:
                     num_words += 1
                     lemma_ids.add(word.lemma_id)
                     points.append((num_words, len(lemma_ids)))
