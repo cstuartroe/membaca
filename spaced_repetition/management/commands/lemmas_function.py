@@ -1,4 +1,5 @@
 import re
+from tqdm import tqdm
 from dataclasses import dataclass
 from django.core.management.base import BaseCommand
 from matplotlib import pyplot as plt
@@ -12,7 +13,7 @@ def heaps_law(x: int):
 
 
 @dataclass
-class CollectionSummary:
+class WordCountSummary:
     num_annotated_words: int
     num_unique_annotated_lemmas: int
     num_whitespace_words: int
@@ -33,16 +34,18 @@ class Command(BaseCommand):
         num_words = 0
         points = []
 
-        collection_summaries = {}
+        collection_lemma_ids = {}
+        collection_whitespace_words = {}
+        document_summaries = {}
 
-        for document in (
+        for document in tqdm(list(
             Document.objects
             .select_related('collection')
             .filter(collection__language_id=LANGUAGE_IDS[options["language"]])
             .order_by('id')
             .prefetch_related('sentence_set')
             .prefetch_related('sentence_set__words_in_sentence')
-        ):
+        )):
             document_annotated_word_lemma_ids = []
             document_whitespace_words = []
 
@@ -56,23 +59,51 @@ class Command(BaseCommand):
 
                     document_annotated_word_lemma_ids.append(word.lemma_id)
 
-            if document.collection_id not in collection_summaries:
-                collection_summaries[document.collection_id] = CollectionSummary(0, 0, 0, 0)
+            document_summaries[document.title] = WordCountSummary(
+                num_annotated_words=len(document_annotated_word_lemma_ids),
+                num_unique_annotated_lemmas =len(set(document_annotated_word_lemma_ids)),
+                num_whitespace_words=len(document_whitespace_words),
+                num_unique_whitespace_words=len(set(document_whitespace_words)),
+            )
 
-            summary = collection_summaries[document.collection_id]
-            summary.num_annotated_words += len(document_annotated_word_lemma_ids)
-            summary.num_unique_annotated_lemmas += len(set(document_annotated_word_lemma_ids))
-            summary.num_whitespace_words += len(document_whitespace_words)
-            summary.num_unique_whitespace_words += len(set(document_whitespace_words))
+            if document.collection_id not in collection_lemma_ids:
+                collection_lemma_ids[document.collection_id] = []
+                collection_whitespace_words[document.collection_id] = []
+            collection_lemma_ids[document.collection_id] += document_annotated_word_lemma_ids
+            collection_whitespace_words[document.collection_id] += document_whitespace_words
+
+        collection_summaries = {
+            collection_id: WordCountSummary(
+                num_annotated_words=len(lemma_ids),
+                num_unique_annotated_lemmas=len(set(lemma_ids)),
+                num_whitespace_words=len(collection_whitespace_words[collection_id]),
+                num_unique_whitespace_words=len(set(collection_whitespace_words[collection_id])),
+            )
+            for collection_id, lemma_ids in collection_lemma_ids.items()
+        }
 
         actual_num_words, actual_lemmas = points[-1]
         all_xs = list(range(1, actual_num_words+1))
         print(f"Projected lemma count at current word count ({actual_num_words}): {round(heaps_law(actual_num_words))}")
         print(f"Actual lemma count: {actual_lemmas}")
 
+        print("Collections:")
         for collection_id, summary in collection_summaries.items():
             print()
             print(f"Collection {Collection.objects.get(id=collection_id).title}:")
+            print(f"{summary.num_annotated_words} words according to annotation.")
+            print(f"{summary.num_whitespace_words} words according to whitespace.")
+            print(f"{summary.num_unique_annotated_lemmas} unique lemmas according to annotation.")
+            print(f"{summary.num_unique_whitespace_words} unique words according to whitespace.")
+
+        print()
+        print("Documents:")
+        for title, summary in document_summaries.items():
+            if summary.num_annotated_words == 0:
+                continue
+
+            print()
+            print(f"Document {title}:")
             print(f"{summary.num_annotated_words} words according to annotation.")
             print(f"{summary.num_whitespace_words} words according to whitespace.")
             print(f"{summary.num_unique_annotated_lemmas} unique lemmas according to annotation.")
