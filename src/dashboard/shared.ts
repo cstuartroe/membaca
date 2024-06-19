@@ -18,5 +18,5 @@ export function addDays(d: Date, days: number) {
 }
 
 export function ISODate(d: Date) {
-    return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+    return `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
 }
