@@ -32,7 +32,7 @@ type Props = {
 }
 
 type SearchResult = {
-    lemma: Lemma,
+    lemma: Lemma | null,
     exact_match: boolean,
 }
 
@@ -185,17 +185,23 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
                             search_string: e.target.value,
                         })}/>
                 </div>
-                {this.state.suggestions.map((result, i) => (
-                    <div
+                {this.state.suggestions.map((result, i) => {
+                    const data = (result.lemma === null) ? {} : {lemma_id: result.lemma.id};
+
+                    return <div
                         key={i}
                         className={classNames("lemma", "lemma-suggestion", {"exact-match": result.exact_match})}
                         style={{cursor: "pointer"}}
-                        onClick={() => this.submitLemma({lemma_id: result.lemma.id})}
+                        onClick={() => this.submitLemma(data)}
                     >
-                        <div className="citation-form">{result.lemma.citation_form}</div>
-                        <div className="translation">"{result.lemma.translation}"</div>
-                    </div>
-                ))}
+                        {(result.lemma === null) ? (
+                            <div className="translation">No lemma</div>
+                        ) : <>
+                            <div className="citation-form">{result.lemma.citation_form}</div>
+                            <div className="translation">"{result.lemma.translation}"</div>
+                        </>}
+                    </div>;
+                })}
             </div>
         );
     }

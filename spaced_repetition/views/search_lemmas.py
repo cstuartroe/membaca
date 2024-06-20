@@ -9,12 +9,12 @@ from spaced_repetition.utils.string_utils import levenshtein
 
 @dataclass
 class SearchResult:
-    lemma: Lemma
+    lemma: Lemma | None
     exact_match: bool
 
     def to_json(self):
         return {
-            "lemma": self.lemma.to_json(),
+            "lemma": self.lemma and self.lemma.to_json(),
             "exact_match": self.exact_match,
         }
 
@@ -32,7 +32,9 @@ def get_search_results(language_id: int, search_string: str, num_results: int) -
         if word.lemma_id in lemma_ids:
             continue
 
-        lemma_ids.add(word.lemma_id)
+        if word.lemma_id is not None:
+            lemma_ids.add(word.lemma_id)
+
         results.append(
             SearchResult(
                 lemma=word.lemma,
