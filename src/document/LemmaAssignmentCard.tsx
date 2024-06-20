@@ -130,9 +130,9 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
                     </div>
                     <div className="label">Translation</div>
                     <div>
-                        <input
-                            type="text"
+                        <textarea
                             value={new_lemma.translation}
+                            style={{height: "10vh"}}
                             onChange={e => this.setState({
                                 new_lemma: {...new_lemma, translation: e.target.value},
                             })}/>
