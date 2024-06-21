@@ -7,6 +7,8 @@ from spaced_repetition.models.sentence import Sentence
 REPLACEMENTS = {
     "‘": "'",
     "’": "'",
+    "“": "\"",
+    "”": "\"",
 }
 
 
@@ -23,5 +25,7 @@ class Command(BaseCommand):
                 for key, value in REPLACEMENTS.items():
                     assert len(key) == len(value)
                     sentence.text = sentence.text.replace(key, value)
+
+                sentence.text = sentence.text.strip()
 
                 sentence.save()

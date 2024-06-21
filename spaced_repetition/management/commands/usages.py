@@ -1,7 +1,5 @@
 from django.core.management.base import BaseCommand
-from spaced_repetition.models.language import LANGUAGE_IDS
 from spaced_repetition.models.word_in_sentence import WordInSentence
-from spaced_repetition.views.search_lemmas import get_search_results
 
 
 class Command(BaseCommand):
