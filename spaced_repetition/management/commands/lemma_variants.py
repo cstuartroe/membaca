@@ -26,6 +26,9 @@ class Command(BaseCommand):
         lemma_variants_by_id: dict[int, LemmaVariantInfo] = {}
 
         for word in Word.objects.select_related('lemma').filter(language_id=language_id):
+            if word.lemma_id is None:
+                continue
+
             if word.lemma_id not in lemma_variants_by_id:
                 lemma_variants_by_id[word.lemma_id] = LemmaVariantInfo(
                     lemma=word.lemma,
