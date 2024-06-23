@@ -67,10 +67,11 @@ class Command(BaseCommand):
         else:
             agree = input("Continue? enter y: ")
             if agree.lower() == "y":
-                Word.objects.all().delete()
-                for word, lemma_id, language_id in words_and_lemma_ids:
+                for word, lemma_id, language_id in words_to_create:
                     Word(
                         word=word,
                         lemma_id=lemma_id,
                         language_id=language_id,
                     ).save()
+                for word, lemma_id, _ in words_to_delete:
+                    Word.objects.get(word=word, lemma_id=lemma_id).delete()
