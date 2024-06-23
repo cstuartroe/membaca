@@ -31,14 +31,14 @@ class Command(BaseCommand):
         times_seen_per_lemma = {}
 
         print("Counting times lemmas seen...")
-        for sentence_add in tqdm(list(
+        for sentence_add in (
             SentenceAdd.objects.filter(user_id=options["user_id"])
             .select_related('sentence')
             .select_related('sentence__document')
             .select_related('sentence__document__collection')
             .filter(sentence__document__collection__language_id=language_id)
             .prefetch_related('sentence__words_in_sentence')
-        )):
+        ):
             for word in sentence_add.sentence.words_in_sentence.all():
                 if word.lemma_id is None:
                     continue
@@ -50,18 +50,21 @@ class Command(BaseCommand):
             for lemma in Lemma.objects.filter(language_id=language_id)
         }
         lemma_adds_by_lemma_id = {}
+        for lemma_add in LemmaAdd.objects.filter(user_id=options["user_id"]):
+            if lemma_add.lemma_id in lemma_adds_by_lemma_id:
+                raise ValueError
+
+            lemma_adds_by_lemma_id[lemma_add.lemma_id] = lemma_add
 
         to_delete = []
         to_create = []
         print("Calculating lists to create and delete...")
-        for lemma_id, times in tqdm(times_seen_per_lemma.items()):
-            lemma_adds = list(LemmaAdd.objects.filter(lemma_id=lemma_id, user_id=options["user_id"]))
-            assert len(lemma_adds) < 2
+        for lemma_id, times in times_seen_per_lemma.items():
+            lemma_add_exists = lemma_id in lemma_adds_by_lemma_id
 
-            if times < 2 and lemma_adds:
+            if times < 2 and lemma_add_exists:
                 to_delete.append(lemmas_by_id[lemma_id])
-                lemma_adds_by_lemma_id[lemma_id] = lemma_adds[0]
-            elif times >= 2 and not lemma_adds:
+            elif times >= 2 and not lemma_add_exists:
                 to_create.append(lemmas_by_id[lemma_id])
 
         to_delete.sort(key=lambda lemma: lemma.id)
