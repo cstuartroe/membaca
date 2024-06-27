@@ -38,6 +38,7 @@ type SearchResult = {
 
 type State = {
     suggestions: SearchResult[],
+    no_lemma_matched: boolean,
     search_string: string,
     new_lemma?: Lemma,
     status: "unsubmitted" | "submitting" | "submitted",
@@ -48,6 +49,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
         super(props);
         this.state = {
             suggestions: [],
+            no_lemma_matched: false,
             search_string: props.search_string,
             status: "unsubmitted",
         }
@@ -58,7 +60,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
 
         fetch(`/api/search_lemmas?language_id=${this.props.language.id}&q=${search_string}&num_results=5`)
             .then(res => res.json())
-            .then(suggestions => this.setState({suggestions}));
+            .then(data => this.setState({suggestions: data.results, no_lemma_matched: data.no_lemma_matched}));
     }
 
     componentDidMount() {
@@ -102,7 +104,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
     }
 
     render() {
-        const { new_lemma, status } = this.state;
+        const { new_lemma, status, no_lemma_matched } = this.state;
 
         if (status === "submitted") {
             return null;
@@ -170,7 +172,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
                     New lemma
                 </div>
 
-                <div className="button"
+                <div className={classNames("button", {"correct": no_lemma_matched})}
                      style={{marginBottom: "5px"}}
                      onClick={() => this.submitLemma({})}
                 >

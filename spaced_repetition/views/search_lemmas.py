@@ -19,7 +19,7 @@ class SearchResult:
         }
 
 
-def get_search_results(language_id: int, search_string: str, num_results: int) -> list[SearchResult]:
+def get_search_results(language_id: int, search_string: str, num_results: int) -> tuple[list[SearchResult], bool]:
     words_and_edit_distance: list[tuple[str, float]] = [
         (word, levenshtein(search_string, word.word.lower()))
         for word in Word.objects.filter(language_id=language_id)
@@ -28,12 +28,16 @@ def get_search_results(language_id: int, search_string: str, num_results: int) -
 
     lemma_ids = set()
     results: list[SearchResult] = []
+    no_lemma_matched = False
     for word, edit_distance in words_and_edit_distance:
         if word.lemma_id in lemma_ids:
             continue
 
-        if word.lemma_id is not None:
-            lemma_ids.add(word.lemma_id)
+        if word.lemma_id is None:
+            no_lemma_matched = True
+            continue
+
+        lemma_ids.add(word.lemma_id)
 
         results.append(
             SearchResult(
@@ -45,7 +49,7 @@ def get_search_results(language_id: int, search_string: str, num_results: int) -
         if len(results) == num_results:
             break
 
-    return results
+    return results, no_lemma_matched
 
 
 class SearchLemmasView(View):
@@ -55,12 +59,16 @@ class SearchLemmasView(View):
         search_string = request.GET.get("q").lower()
         num_results = int(request.GET.get("num_results", 5))
 
+        results, no_lemma_matched = get_search_results(language_id, search_string, num_results)
+
         return JsonResponse(
-            data=[
-                result.to_json()
-                for result in get_search_results(language_id, search_string, num_results)
-            ],
-            safe=False,
+            data={
+                "results": [
+                    result.to_json()
+                    for result in results
+                ],
+                "no_lemma_matched": no_lemma_matched,
+            }
         )
 
 
