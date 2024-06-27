@@ -63,7 +63,7 @@ def create_word_in_sentence(data: dict):
         word_pieces.append(sentence.text[substring.start:substring.end])
 
     word_text = ' '.join(word_pieces)
-    if word_text != citation_form and lemma_id is not None:
+    if word_text != citation_form:
         word = Word(
             word=word_text,
             language_id=language_id,
