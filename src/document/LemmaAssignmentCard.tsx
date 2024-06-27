@@ -32,7 +32,7 @@ type Props = {
 }
 
 type SearchResult = {
-    lemma: Lemma | null,
+    lemma: Lemma,
     exact_match: boolean,
 }
 
@@ -188,7 +188,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
                         })}/>
                 </div>
                 {this.state.suggestions.map((result, i) => {
-                    const data = (result.lemma === null) ? {} : {lemma_id: result.lemma.id};
+                    const data = {lemma_id: result.lemma.id};
 
                     return <div
                         key={i}
