@@ -16,7 +16,7 @@ const SearchResources: {[key in LanguageName]: [string, ((s: string) => string)]
         ['Wiktionary', kata => `https://en.wiktionary.org/wiki/${kata}#Indonesian`],
         ['Dict.com', kata => `https://www.dict.com/indonesian-english/${kata}`],
         ['Sederet', kata => `https://sederet.com/translate.php?lang=id_en&q=${kata}`],
-        ['Google Translate', kata => `https://translate.google.com/?sl=nl&tl=en&text=${kata}&op=translate`]
+        ['Google Translate', kata => `https://translate.google.com/?sl=id&tl=en&text=${kata}&op=translate`]
     ],
 }
 
