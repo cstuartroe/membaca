@@ -27,5 +27,5 @@ class Command(BaseCommand):
             cumulative_read_by_day.append((current_day, cumulative_read))
             current_day += datetime.timedelta(days=1)
 
-        plt.plot(*zip(*cumulative_read_by_day), marker='o')
+        plt.plot(*zip(*cumulative_read_by_day))
         plt.show()
