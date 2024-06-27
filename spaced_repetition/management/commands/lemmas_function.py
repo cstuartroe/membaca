@@ -59,10 +59,12 @@ class Command(BaseCommand):
 
                 for word in words:
                     num_words += 1
-                    lemma_ids.add(word.lemma_id)
-                    points.append((num_words, len(lemma_ids)))
 
-                    document_annotated_word_lemma_ids.append(word.lemma_id)
+                    if word.lemma_id is not None:
+                        lemma_ids.add(word.lemma_id)
+                        document_annotated_word_lemma_ids.append(word.lemma_id)
+
+                    points.append((num_words, len(lemma_ids)))
 
             document_summaries[document.title] = WordCountSummary(
                 num_annotated_words=len(document_annotated_word_lemma_ids),
