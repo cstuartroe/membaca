@@ -34,7 +34,9 @@ def get_search_results(language_id: int, search_string: str, num_results: int) -
             continue
 
         if word.lemma_id is None:
-            no_lemma_matched = True
+            if edit_distance == 0:
+                no_lemma_matched = True
+
             continue
 
         lemma_ids.add(word.lemma_id)
