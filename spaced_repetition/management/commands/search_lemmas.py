@@ -15,7 +15,7 @@ class Command(BaseCommand):
             language_id=LANGUAGE_IDS[options["language"]],
             search_string=options["query"],
             num_results=10,
-        )
+        )[0]
 
         for result in results:
             print(result.lemma.id, result.lemma.citation_form, repr(result.lemma.translation))
