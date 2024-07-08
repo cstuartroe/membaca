@@ -25,9 +25,6 @@ class ReadingHistory:
     added_lemmas_by_day: dict[datetime, int]
 
 
-MAXIMUM_SECONDS_SPENT = 180
-
-
 @transaction.atomic
 def get_reading_history(user: User, language_id: int):
     history = ReadingHistory(

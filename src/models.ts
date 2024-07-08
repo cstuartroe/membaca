@@ -109,4 +109,5 @@ export type DailySummary = {
   new_lemmas: number,
   new_lemma_trials: number,
   review_trials: number,
+  seconds_taken: number,
 }

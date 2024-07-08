@@ -207,16 +207,17 @@ export default class Dashboard extends Component<Props, State> {
                             <p style={{textAlign: "center"}}>In total, you've done {totalCards} cards.</p>
                         </div>
 
-                        <div className="col-4"><p>Date</p></div>
+                        <div className="col-2"><p>Date</p></div>
                         <div className="col-2"><p>New words</p></div>
                         <div className="col-2"><p>New word cards</p></div>
                         <div className="col-2"><p>Review cards</p></div>
                         <div className="col-2"><p>Total cards</p></div>
+                        <div className="col-2"><p>Time taken</p></div>
                     </div>
 
                     {summaries.map(summary => (
                         <div className="row" key={summary.date.getTime()}>
-                            <div className="col-4">
+                            <div className="col-2">
                                 <p>{ISODate(summary.date)}</p>
                             </div>
                             <div className="col-2">
@@ -230,6 +231,11 @@ export default class Dashboard extends Component<Props, State> {
                             </div>
                             <div className="col-2">
                                 <p>{summary.new_lemma_trials + summary.review_trials}</p>
+                            </div>
+                            <div className="col-2">
+                                <p>
+                                    {(Math.floor(summary.seconds_taken / 60) + "").padStart(2, '0')}
+                                    :{(Math.round(summary.seconds_taken % 60) + "").padStart(2, '0')}</p>
                             </div>
                         </div>
                     ))}

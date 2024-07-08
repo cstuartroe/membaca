@@ -6,16 +6,20 @@ from .ajax_utils import logged_in
 from spaced_repetition.models.metadata_trial import MetadataTrial
 
 
+MAXIMUM_TRIAL_TIME = datetime.timedelta(seconds=10)
+
+
 @dataclass
 class DailyMetadataActivity:
     date: datetime.date
     new_lemmas: set[int]
     new_lemma_trials: list[MetadataTrial]
     review_trials: list[MetadataTrial]
+    time_taken: datetime.timedelta
 
     @classmethod
     def new(cls, date: datetime.date):
-        return cls(date, set(), [], [])
+        return cls(date, set(), [], [], datetime.timedelta(0))
 
     def summary(self):
         return {
@@ -23,6 +27,7 @@ class DailyMetadataActivity:
             "new_lemmas": len(self.new_lemmas),
             "new_lemma_trials": len(self.new_lemma_trials),
             "review_trials": len(self.review_trials),
+            "seconds_taken": self.time_taken.total_seconds(),
         }
 
 
@@ -42,6 +47,7 @@ class MetadataHistoryView(View):
 
         current_day = trials[0].time_created.date()
         current_daily_activity = DailyMetadataActivity.new(current_day)
+        last_trial_time = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
         for trial in trials:
             if trial.time_created.date() != current_day:
@@ -55,6 +61,12 @@ class MetadataHistoryView(View):
             else:
                 current_daily_activity.new_lemmas.add(trial.lemma_add.lemma_id)
                 current_daily_activity.new_lemma_trials.append(trial)
+
+            current_daily_activity.time_taken += min(
+                MAXIMUM_TRIAL_TIME,
+                trial.time_created - last_trial_time
+            )
+            last_trial_time = trial.time_created
 
         daily_summaries.append(current_daily_activity.summary())
 
