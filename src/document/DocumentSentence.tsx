@@ -284,7 +284,10 @@ export default class DocumentSentence extends Component<Props, State> {
                                         {substring_text}
                                     </a>
                                     {actually_expand() && (
-                                        <LemmaDisplayCard word_in_sentence={words[word_index]} close={close}/>
+                                        <LemmaDisplayCard
+                                            word_in_sentence={words[word_index]}
+                                            close={close}
+                                            loadSentence={() => this.loadSentence()}/>
                                     )}
                                 </span>
                             );

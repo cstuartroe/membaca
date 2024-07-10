@@ -275,14 +275,21 @@ $sentence_checkbox_width: 2vh;
   overflow-y: scroll;
 }
 
-.close {
+.close, .top-left {
   position: absolute;
   top: 10px;
-  right: 10px;
   cursor: pointer;
   z-index: 1;
   font-family: "Madimi One", sans-serif;
   font-size: 2vh;
+}
+
+.close {
+  right: 10px;
+}
+
+.top-left {
+  left: 10px;
 }
 
 .indonesian-e-picker {

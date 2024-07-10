@@ -1,11 +1,15 @@
 import React, {Component} from "react";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faTrashCan} from "@fortawesome/free-solid-svg-icons";
 
 import {Lemma, WordInSentence} from "../models";
+import {safePostForm} from "../ajax_utils";
 
 
 type Props = {
     word_in_sentence: WordInSentence,
     close: () => void,
+    loadSentence: () => void,
 }
 
 type State = {
@@ -30,6 +34,17 @@ export default class LemmaDisplayCard extends Component<Props, State> {
             .then(lemma => this.setState({lemma}));
     }
 
+    delete() {
+        safePostForm(
+            `/admin/spaced_repetition/wordinsentence/${this.props.word_in_sentence.id}/delete/`,
+            {
+                post: "yes",
+            },
+            true,
+        )
+            .then(_ => this.props.loadSentence())
+    }
+
     render() {
         const { lemma } = this.state;
 
@@ -50,6 +65,7 @@ export default class LemmaDisplayCard extends Component<Props, State> {
 
         return (
             <div className="lemma-card">
+                <div className="top-left" onClick={() => this.delete()}><FontAwesomeIcon icon={faTrashCan}/></div>
                 <div className="close" onClick={() => this.props.close()}>X</div>
                 <div className="lemma">
                     {content}
