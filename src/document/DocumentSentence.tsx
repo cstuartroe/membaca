@@ -7,6 +7,7 @@ import {safePost} from "../ajax_utils";
 import {Language, Sentence, Substring, WordInSentence} from "../models";
 import LemmaDisplayCard from "./LemmaDisplayCard";
 import LemmaAssignmentCard, {UNASSIGNED_LEMMA_ID} from "./LemmaAssignmentCard";
+import LemmaSearchCache from "./LemmaSearchCache";
 
 
 const FAKE_WORD_ID = -1;
@@ -36,6 +37,8 @@ type State = {
     assigning_substrings: Substring[],
     selection_start_substring?: number,
 
+    lemma_search_cache: LemmaSearchCache,
+
     // undefined if it has not been set since the sentence was loaded, so first unassigned may be expanded
     // null if a popover was just closed, so that definitely no word is expanded
     expanded_word_index: number | undefined | null,
@@ -48,6 +51,7 @@ export default class DocumentSentence extends Component<Props, State> {
             added: false,
             assigning_substrings: [],
             expanded_word_index: undefined,
+            lemma_search_cache: new LemmaSearchCache(props.language.id),
         };
     }
 
@@ -183,11 +187,18 @@ export default class DocumentSentence extends Component<Props, State> {
         const { text } = this.props.sentence;
         const { expanded_word_index, fetched_words } = this.state;
 
+        const getWordString = (word: WordInSentence) => word.substrings.map(substring => (
+            text.substring(substring.start, substring.end)
+        )).join(' ');
+
         if (fetched_words === undefined) {
             return [[text], true];
         }
 
         const [words, substrings] = this.deriveWordsAndSubstrings();
+        if (this.props.expand_first_unassigned) {
+            words.forEach(word => this.state.lemma_search_cache.search(getWordString(word)));
+        }
 
         let any_unassigned = false;
 
@@ -228,8 +239,7 @@ export default class DocumentSentence extends Component<Props, State> {
                 }
 
                 const actually_expand = () => substring_expanded && (assigned_substring.substring === words[word_index].substrings[0]);
-                const search_string = words[word_index].substrings.map(substring => (
-                    text.substring(substring.start, substring.end))).join(' ');
+                const search_string = getWordString(words[word_index]);
 
                 const extra_classnames = () => ({
                     sentence_word: true,
@@ -258,6 +268,7 @@ export default class DocumentSentence extends Component<Props, State> {
                                     loadSentence={() => this.loadSentence()}
                                     word_in_sentence={words[word_index]}
                                     close={close}
+                                    lemma_search_cache={this.state.lemma_search_cache}
                                 />
                             )}
                         </span>

@@ -3,6 +3,7 @@ import classNames from "classnames";
 
 import {safePost} from "../ajax_utils";
 import {LanguageName, Language, Lemma, WordInSentence} from "../models";
+import LemmaSearchCache, {SearchResult} from "./LemmaSearchCache";
 
 
 const SearchResources: {[key in LanguageName]: [string, ((s: string) => string)][]} = {
@@ -29,11 +30,7 @@ type Props = {
     word_in_sentence: WordInSentence,
     loadSentence: () => void,
     close: () => void,
-}
-
-type SearchResult = {
-    lemma: Lemma,
-    exact_match: boolean,
+    lemma_search_cache: LemmaSearchCache,
 }
 
 type State = {
@@ -56,11 +53,8 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
     }
 
     performSearch() {
-        const search_string = this.state.search_string;
-
-        fetch(`/api/search_lemmas?language_id=${this.props.language.id}&q=${search_string}&num_results=5`)
-            .then(res => res.json())
-            .then(data => this.setState({suggestions: data.results, no_lemma_matched: data.no_lemma_matched}));
+        this.props.lemma_search_cache.search(this.state.search_string)
+            .then(results => this.setState({suggestions: results.results, no_lemma_matched: results.no_lemma_matched}));
     }
 
     componentDidMount() {
@@ -98,6 +92,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
         ).then(res => {
             if (res.ok) {
                 this.setState({status: "submitted"});
+                this.props.lemma_search_cache.clear(this.state.search_string);
                 this.props.loadSentence();
             }
         })
