@@ -20,5 +20,16 @@ class Word(models.Model):
     language = models.ForeignKey(Language, on_delete=models.PROTECT)
     lemma = models.ForeignKey(Lemma, on_delete=models.CASCADE, null=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name="unique_word_and_lemma",
+                fields=[
+                    "word",
+                    "lemma",
+                ],
+            )
+        ]
+
     def __str__(self):
         return f"Form {self.word} of lemma {self.lemma}"

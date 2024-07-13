@@ -64,12 +64,15 @@ def create_word_in_sentence(data: dict):
 
     word_text = ' '.join(word_pieces)
     if word_text != citation_form:
-        word = Word(
-            word=word_text,
-            language_id=language_id,
-            lemma_id=lemma_id,
-        )
-        word.save()
+        matching_word = list(Word.objects.filter(word=word_text, lemma_id=lemma_id))
+
+        if not matching_word:
+            word = Word(
+                word=word_text,
+                language_id=language_id,
+                lemma_id=lemma_id,
+            )
+            word.save()
 
 
 class WordInSentenceView(View):
