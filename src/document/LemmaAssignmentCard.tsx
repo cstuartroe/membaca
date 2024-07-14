@@ -92,6 +92,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
         ).then(res => {
             if (res.ok) {
                 this.setState({status: "submitted"});
+                this.props.lemma_search_cache.clear(this.props.search_string);
                 this.props.lemma_search_cache.clear(this.state.search_string);
                 this.props.loadSentence();
             }

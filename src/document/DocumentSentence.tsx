@@ -196,8 +196,15 @@ export default class DocumentSentence extends Component<Props, State> {
         }
 
         const [words, substrings] = this.deriveWordsAndSubstrings();
+        let num_preloaded = 0;
+        const to_preload = 5;
         if (this.props.expand_first_unassigned) {
-            words.forEach(word => this.state.lemma_search_cache.search(getWordString(word)));
+            words.forEach(word => {
+                if ([UNASSIGNED_LEMMA_ID, ASSIGNING_LEMMA_ID].includes(word.lemma_id as number) && num_preloaded < to_preload) {
+                    this.state.lemma_search_cache.search(getWordString(word));
+                    num_preloaded++;
+                }
+            });
         }
 
         let any_unassigned = false;
