@@ -82,13 +82,19 @@ def random_similar(target: Lemma, choices: list[Lemma], number: int = 3) -> list
     return random.sample([lemma for _, lemma in diffs[:100]], k=number)
 
 
-def random_word_in_sentence(user: User, lemma: Lemma) -> WordInSentence:
-    return (
+def random_word_in_sentence(user: User, lemma: Lemma, parts: int = None) -> WordInSentence | None:
+    words = list(
         WordInSentence.objects.select_related('sentence')
         .prefetch_related('sentence__adds')
+        .prefetch_related('substrings')
         .filter(lemma_id=lemma.id, sentence__adds__user_id=user.id)
         .order_by('?')
-    )[0]
+    )
+    for word in words:
+        if (parts is None) or (len(list(word.substrings.all())) == parts):
+            return word
+
+    return None
 
 
 def get_translation_card(lemma: Lemma, recommended_easiness: int, all_lemmas: list[Lemma]):
@@ -113,14 +119,29 @@ def get_citation_form_card(lemma: Lemma, recommended_easiness: int, all_lemmas: 
 
 def get_cloze_card(lemma: Lemma, recommended_easiness: int, playing_lemmas: list[Lemma], user: User):
     word = random_word_in_sentence(user, lemma)
+    parts = len(list(word.substrings.all()))
+
+    lemmas_to_try = []
+    i = 0
+    other_choices = []
+    while len(other_choices) < 3:
+        if i == len(lemmas_to_try):
+            lemmas_to_try += random_similar(lemma, playing_lemmas, 5)
+
+        if len(lemmas_to_try) >= 30:
+            parts = None
+
+        choice = random_word_in_sentence(user, lemmas_to_try[i], parts)
+        if choice is not None and not any(c.lemma_id == choice.lemma_id for c in other_choices):
+            other_choices.append(choice)
+
+        i += 1
+
     return CardInfo(
         lemma_id=lemma.id,
         trial_type=Trial.TrialType.CLOZE.value,
         answer=word,
-        other_choices=[
-            random_word_in_sentence(user, l).slash_separated_string()
-            for l in random_similar(lemma, playing_lemmas)
-        ],
+        other_choices=[c.slash_separated_string() for c in other_choices],
         recommended_easiness=recommended_easiness,
     )
 
