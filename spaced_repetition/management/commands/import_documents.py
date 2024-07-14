@@ -36,7 +36,16 @@ CHARACTER_REPLACEMENTS = {
     "’": "'",
     "…": "...",
     "–": "-",
+    "“": "\"",
+    "”": "\"",
 }
+
+
+def sanitize_text(text):
+    text = re.sub(r"\s+", " ", text.strip())
+    for character, replacement in CHARACTER_REPLACEMENTS.items():
+        text = text.replace(character, replacement)
+    return text
 
 
 def parse_tom_poes(content: str, document_id: int, object_storage_address: str | None):
@@ -50,9 +59,7 @@ def parse_tom_poes(content: str, document_id: int, object_storage_address: str |
         new_image_address = object_storage_address + image_filename
 
         for i, p in enumerate(soup.find_all("p")):
-            text = re.sub(r"\s+", " ", p.text.strip())
-            for character, replacement in CHARACTER_REPLACEMENTS.items():
-                text = text.replace(character, replacement)
+            text = sanitize_text(p.text)
 
             if i == 0:
                 image = new_image_address
@@ -177,10 +184,95 @@ def parse_ontdekking(content: str, object_storage_address: str):
             sentence.save()
 
 
+@transaction.atomic
+def hallo_witte_mensen(content: str, object_storage_address: str):
+    collection = Collection(
+        title="Hallo Witte Mensen",
+        language_id=LANGUAGE_IDS["Dutch"],
+    )
+    collection.save()
+
+    matches = re.findall("<html.*?</html>", content, flags=re.DOTALL)
+    for i, match in enumerate(tqdm(matches)):
+        soup = bs(match, features="html.parser")
+        text_frame = soup.body.find("div", {"class": "Basic-Text-Frame"})
+
+        sentence_index = 1
+        document = None
+
+        for child in text_frame.children:
+            if child.name is None:
+                continue
+
+            assert child.name in ("p", "table")
+
+            text = sanitize_text(child.text)
+
+            if text == "Aanbevolen om te lezen en te kijken":
+                break
+
+            if child["class"] == ["AUP_T1_W"]:
+                document = Document(
+                    title=text,
+                    collection=collection,
+                    order=i+1,
+                    link="https://www.onlinebibliotheek.nl/catalogus/409838934/hallo-witte-mensen-anousha-nzume",
+                )
+                document.save()
+
+                Sentence(
+                    document=document,
+                    position=sentence_index,
+                    text=text,
+                    translation="",
+                    format_level=Sentence.FormatLevel.H1,
+                ).save()
+
+                sentence_index += 1
+            elif child["class"] in (["AUP_T2_NoNumber_ZW"], ["AUP_T2_NoNumber"]):
+                Sentence(
+                    document=document,
+                    position=sentence_index,
+                    text=text,
+                    translation="",
+                    format_level=Sentence.FormatLevel.H2,
+                ).save()
+
+                sentence_index += 1
+            elif child.name == "table":
+                for row in child.find_all("tr"):
+                    texts = []
+                    for col in row.find_all("td"):
+                        texts.append(col.text)
+                    text = sanitize_text(" - ".join(texts))
+
+                    Sentence(
+                        document=document,
+                        position=sentence_index,
+                        text=text,
+                        translation="",
+                        format_level=Sentence.FormatLevel.P,
+                    ).save()
+
+                    sentence_index += 1
+
+            else:
+                Sentence(
+                    document=document,
+                    position=sentence_index,
+                    text=text,
+                    translation="",
+                    format_level=Sentence.FormatLevel.P,
+                ).save()
+
+                sentence_index += 1
+
+
 PARSING_DISPATCH_TABLE = {
     "tom_poes": parse_tom_poes,
     "kompas": parse_kompas,
     "de_ontdekking_van_hemel": parse_ontdekking,
+    "hallo_witte_mensen": hallo_witte_mensen,
 }
 
 
