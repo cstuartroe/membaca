@@ -62,6 +62,10 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
     }
 
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+        if (prevProps.search_string != this.props.search_string) {
+            this.setState({search_string: this.props.search_string});
+        }
+
         if (prevState.search_string != this.state.search_string) {
             this.performSearch();
         }
