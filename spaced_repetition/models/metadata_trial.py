@@ -2,7 +2,7 @@ import datetime
 from django.db import models
 from django.core import validators
 from .lemma_add import LemmaAdd
-from .trial import EASINESS_DAYS
+from .trial import EASINESS_DAYS, get_due_date
 
 
 class MetadataTrial(models.Model):
@@ -23,7 +23,7 @@ class MetadataTrial(models.Model):
         return f"Testing {self.metadata_field} of {self.lemma_add} on {self.time_created}"
 
     def due_date(self) -> datetime.date:
-        return (self.time_created + datetime.timedelta(days=EASINESS_DAYS[self.easiness])).date()
+        return get_due_date(self)
 
     def to_json(self):
         return {

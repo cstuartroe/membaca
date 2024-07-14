@@ -21,6 +21,15 @@ EASINESS_DAYS = [
 MAX_EASINESS = len(EASINESS_DAYS) - 1
 
 
+def get_due_date(trial):
+    date = trial.time_created + datetime.timedelta(days=EASINESS_DAYS[trial.easiness])
+
+    if trial.easiness >= 4:
+        date += datetime.timedelta(days=-1 + (trial.time_created.microsecond % 3))
+
+    return date.date()
+
+
 class Trial(models.Model):
     class TrialType(models.TextChoices):
         CLOZE = "cz", _("cloze")
@@ -45,7 +54,7 @@ class Trial(models.Model):
         return f"{self.lemma_add} on {self.time_created}"
 
     def due_date(self) -> datetime.date:
-        return (self.time_created + datetime.timedelta(days=EASINESS_DAYS[self.easiness])).date()
+        return get_due_date(self)
 
     def to_json(self):
         return {
