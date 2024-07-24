@@ -19,6 +19,18 @@ const SearchResources: {[key in LanguageName]: [string, ((s: string) => string)]
         ['Sederet', kata => `https://sederet.com/translate.php?lang=id_en&q=${kata}`],
         ['Google Translate', kata => `https://translate.google.com/?sl=id&tl=en&text=${kata}&op=translate`]
     ],
+    "Esperanto": [
+        ['Wiktionary', vorto => `https://en.wiktionary.org/wiki/${vorto}#Esperanto`],
+    ],
+    "Greek": [
+        ['Wiktionary', λέξη => `https://en.wiktionary.org/wiki/${λέξη}#Greek`],
+    ],
+    "Russian": [
+        ['Wiktionary', слово => `https://en.wiktionary.org/wiki/${слово}#Russian`],
+    ],
+    "Turkish": [
+        ['Wiktionary', kelime => `https://en.wiktionary.org/wiki/${kelime}#Turkish`],
+    ],
 }
 
 

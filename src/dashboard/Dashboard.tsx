@@ -391,9 +391,7 @@ export default class Dashboard extends Component<Props, State> {
     }
 
     metadataSections() {
-        if (this.props.current_language.name === "Indonesian") {
-            return null;
-        } else if (this.props.current_language.name === "Dutch") {
+        if (this.props.current_language.name === "Dutch") {
             const gender_play_summary = this.state.metadata_play_summaries["gender"];
 
             if (gender_play_summary === undefined) {
@@ -441,7 +439,7 @@ export default class Dashboard extends Component<Props, State> {
                 </div>
             </>;
         } else {
-            throw `Unknown language: ${this.props.current_language.name}`;
+            return null;
         }
     }
 

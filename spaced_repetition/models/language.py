@@ -4,6 +4,10 @@ from django.db import models
 LANGUAGE_IDS: dict[str, int] = {
     "Dutch": 1,
     "Indonesian": 2,
+    "Esperanto": 3,
+    "Greek": 4,
+    "Russian": 5,
+    "Turkish": 6,
 }
 
 
