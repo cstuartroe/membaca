@@ -13,7 +13,7 @@ import LemmaSearchCache from "./LemmaSearchCache";
 const FAKE_WORD_ID = -1;
 const ASSIGNING_LEMMA_ID = -2;
 const SKIP_CHARACTERS: string[] = [
-    " ", ".", ",", "!", "?", "\"", "'", ";", "-", "(", ")", "/", ":", "*",
+    " ", "\n", ".", ",", "!", "?", "\"", "'", ";", "-", "(", ")", "/", ":", "*",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     "«", "»",
 ];
