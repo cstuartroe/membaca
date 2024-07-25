@@ -146,6 +146,11 @@ $sentence_checkbox_width: 2vh;
 }
 
 
+.document-sentence {
+  font-variant-ligatures: none;
+}
+
+
 .document-translation {
   padding-right: $sentence_checkbox_width;
 }
