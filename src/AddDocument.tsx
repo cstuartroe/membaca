@@ -122,7 +122,10 @@ export default class AddDocument extends Component<Props, State> {
     componentDidMount() {
         fetch(`/api/collections?language_id=${this.props.language.id}`)
             .then(res => res.json())
-            .then(collections => this.setState({collections}))
+            .then(collections => this.setState({
+                collections,
+                collection_id: collections[0].id,
+            }))
     }
 
     submit() {
