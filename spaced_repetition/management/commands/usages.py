@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
             text = word.sentence.text
             for substring in sorted(list(word.substrings.all()), key=lambda s: -s.start):
-                text = text[:substring.start] + "<" + text[substring.start:substring.end] + ">" + text[substring.end:]
+                text = text[:substring.start] + "\033[91m" + text[substring.start:substring.end] + " \033[0m" + text[substring.end:]
 
             print(text)
             print()
