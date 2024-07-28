@@ -1,8 +1,10 @@
 import React, {Component} from "react";
 import classNames from "classnames";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faArrowLeft, faArrowRight} from "@fortawesome/free-solid-svg-icons";
 
 import {safePost} from "../ajax_utils";
-import {LanguageName, Language, Lemma, WordInSentence} from "../models";
+import {LanguageName, Language, Lemma, WordInSentence, Substring} from "../models";
 import LemmaSearchCache, {SearchResult} from "./LemmaSearchCache";
 
 
@@ -43,6 +45,8 @@ type Props = {
     loadSentence: () => void,
     close: () => void,
     lemma_search_cache: LemmaSearchCache,
+    assigning_substring: Substring,
+    adjustAssigningSubstring: (s: Substring) => void,
 }
 
 type State = {
@@ -169,6 +173,50 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
         return (
             <div className="lemma-card">
                 <div className="close" onClick={() => this.props.close()}><div>X</div></div>
+
+                <div className="row assigning-substring-adjust">
+                    <div className="col-3">
+                        <div className="button"
+                             onClick={() => this.props.adjustAssigningSubstring({
+                                 start: this.props.assigning_substring.start - 1,
+                                 end: this.props.assigning_substring.end,
+                             })}
+                        >
+                            <FontAwesomeIcon icon={faArrowLeft}/>
+                        </div>
+                    </div>
+                    <div className="col-3">
+                        <div className="button"
+                             onClick={() => this.props.adjustAssigningSubstring({
+                                 start: this.props.assigning_substring.start + 1,
+                                 end: this.props.assigning_substring.end,
+                             })}
+                        >
+                            <FontAwesomeIcon icon={faArrowRight}/>
+                        </div>
+                    </div>
+                    <div className="col-3">
+                        <div className="button"
+                             onClick={() => this.props.adjustAssigningSubstring({
+                                 start: this.props.assigning_substring.start,
+                                 end: this.props.assigning_substring.end - 1,
+                             })}
+                        >
+                            <FontAwesomeIcon icon={faArrowLeft}/>
+                        </div>
+                    </div>
+                    <div className="col-3"
+                         onClick={() => this.props.adjustAssigningSubstring({
+                             start: this.props.assigning_substring.start,
+                             end: this.props.assigning_substring.end + 1,
+                         })}
+                    >
+                        <div className="button">
+                            <FontAwesomeIcon icon={faArrowRight}/>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="button"
                      style={{marginBottom: "5px"}}
                      onClick={() => this.setState({

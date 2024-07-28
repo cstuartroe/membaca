@@ -276,6 +276,26 @@ export default class DocumentSentence extends Component<Props, State> {
                                     word_in_sentence={words[word_index]}
                                     close={close}
                                     lemma_search_cache={this.state.lemma_search_cache}
+                                    assigning_substring={assigned_substring.substring}
+                                    adjustAssigningSubstring={(substring: Substring) => {
+                                        const substrings = this.state.assigning_substrings;
+                                        console.log("Reassigning substrings")
+                                        console.log(substrings)
+                                        const i = substrings.findIndex(s => (
+                                            (s.start === assigned_substring.substring.start)
+                                            && (s.end === assigned_substring.substring.end)
+                                        ))
+                                        if (i !== -1) {
+                                            substrings[i] = substring
+                                        } else {
+                                            substrings.push(substring);
+                                        }
+                                        console.log(substrings);
+                                        this.setState({
+                                            assigning_substrings: substrings,
+                                            expanded_word_index: fetched_words!.length,
+                                        });
+                                    }}
                                 />
                             )}
                         </span>

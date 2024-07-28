@@ -317,3 +317,15 @@ $sentence_checkbox_width: 2vh;
   padding-bottom: 1vh;
   font-size: 2vh;
 }
+
+.assigning-substring-adjust {
+  margin: 0 -5px;
+
+  .col-3 {
+    padding: 0 5px;
+
+    .button {
+      margin-bottom: 5px;
+    }
+  }
+}
