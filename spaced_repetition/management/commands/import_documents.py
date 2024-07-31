@@ -102,7 +102,11 @@ def parse_kompas(content: str, document_id: int, object_storage_address: str):
 
     sentence_index = 2
     clearfix = soup.find("div", {"class": "read__content"}).div
+    image = ""
     for child in clearfix.children:
+        if child.name and child.find("div", {"class": "photo"}):
+            image = child.find("div", {"class": "photo"}).img.attrs["src"]
+
         if child.name == "p":
             if child.text.startswith("Baca juga:"):
                 continue
@@ -110,6 +114,8 @@ def parse_kompas(content: str, document_id: int, object_storage_address: str):
             format_level = Sentence.FormatLevel.NEW_SECTION if sentence_index == 2 else Sentence.FormatLevel.P
         elif child.name == "h3":
             format_level = Sentence.FormatLevel.H3
+        elif child.name == "h2":
+            format_level = Sentence.FormatLevel.H2
         else:
             continue
 
@@ -122,8 +128,10 @@ def parse_kompas(content: str, document_id: int, object_storage_address: str):
             text=child.text,
             translation=translate_text(child.text, "id", "en"),
             format_level=format_level,
+            image=image,
         ).save()
         sentence_index += 1
+        image = ""
 
 
 def parse_ontdekking(content: str, object_storage_address: str):
