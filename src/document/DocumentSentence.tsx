@@ -42,6 +42,10 @@ type State = {
     // undefined if it has not been set since the sentence was loaded, so first unassigned may be expanded
     // null if a popover was just closed, so that definitely no word is expanded
     expanded_word_index: number | undefined | null,
+
+    // if the assigning word is expanded, this is a number representing the index of which substring to expand.
+    // otherwise it is undefined.
+    expanded_assigning_substring_index: number | undefined,
 }
 
 export default class DocumentSentence extends Component<Props, State> {
@@ -51,6 +55,7 @@ export default class DocumentSentence extends Component<Props, State> {
             added: false,
             assigning_substrings: [],
             expanded_word_index: undefined,
+            expanded_assigning_substring_index: undefined,
             lemma_search_cache: new LemmaSearchCache(props.language.id),
         };
     }
@@ -65,6 +70,7 @@ export default class DocumentSentence extends Component<Props, State> {
                         fetched_words: data.words,
                         assigning_substrings: [],
                         expanded_word_index: undefined,
+                        expanded_assigning_substring_index: undefined,
                     },
                     () => {
                         const [_, any_unassigned] = this.substringElements();
@@ -196,6 +202,12 @@ export default class DocumentSentence extends Component<Props, State> {
         }
 
         const [words, substrings] = this.deriveWordsAndSubstrings();
+        const assigning_word_index = (
+            this.state.assigning_substrings.length > 0 ?
+                fetched_words.length
+                : undefined
+        );
+
         let num_preloaded = 0;
         const to_preload = 5;
         if (this.props.expand_first_unassigned) {
@@ -211,6 +223,7 @@ export default class DocumentSentence extends Component<Props, State> {
 
         const close = () => this.setState({
             expanded_word_index: null,
+            expanded_assigning_substring_index: undefined,
         })
 
         const elements = substrings.map((assigned_substring, i) => {
@@ -230,9 +243,12 @@ export default class DocumentSentence extends Component<Props, State> {
                         const end = assigned_substring.substring.start + selection_object.focusOffset;
 
                         if (start !== end) {
+                            const new_assigning_substrings = this.state.assigning_substrings.concat([{start, end}]);
+
                             this.setState({
-                                assigning_substrings: this.state.assigning_substrings.concat([{start, end}]),
-                                expanded_word_index: fetched_words.length, // assigning substring index
+                                assigning_substrings: new_assigning_substrings,
+                                expanded_word_index: assigning_word_index,
+                                expanded_assigning_substring_index: new_assigning_substrings.findIndex(s => s.start === start)
                             });
                             return;
                         }
@@ -241,11 +257,26 @@ export default class DocumentSentence extends Component<Props, State> {
                     if (!substring_expanded) {
                         this.setState({
                             expanded_word_index: word_index,
+                            expanded_assigning_substring_index: (
+                                word_index === assigning_word_index ?
+                                    this.state.assigning_substrings.findIndex(s => s.start === assigned_substring.substring.start)
+                                    : undefined
+                            )
                         })
                     }
                 }
 
-                const actually_expand = () => substring_expanded && (assigned_substring.substring === words[word_index].substrings[0]);
+                const actually_expand = () => {
+                    if (!substring_expanded) {
+                        return false;
+                    }
+
+                    const substring_index: number = (word_index === assigning_word_index) ?
+                        this.state.expanded_assigning_substring_index!
+                        : 0;
+
+                    return assigned_substring.substring === words[word_index].substrings[substring_index]
+                }
                 const search_string = getWordString(words[word_index]);
 
                 const extra_classnames = () => ({
@@ -294,6 +325,7 @@ export default class DocumentSentence extends Component<Props, State> {
                                         this.setState({
                                             assigning_substrings: substrings,
                                             expanded_word_index: fetched_words!.length,
+                                            expanded_assigning_substring_index: substrings.findIndex(s => s.start === substring.start),
                                         });
                                     }}
                                 />
