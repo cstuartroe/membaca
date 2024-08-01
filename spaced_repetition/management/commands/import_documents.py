@@ -192,7 +192,6 @@ def parse_ontdekking(content: str, object_storage_address: str):
             sentence.save()
 
 
-@transaction.atomic
 def hallo_witte_mensen(content: str, object_storage_address: str):
     collection = Collection(
         title="Hallo Witte Mensen",
@@ -276,11 +275,68 @@ def hallo_witte_mensen(content: str, object_storage_address: str):
                 sentence_index += 1
 
 
+def parse_natgeo(content: str, object_storage_address: str, document_id: int):
+    """HTML escaped inside HTML. The goriest thing I've ever seen."""
+
+    onion_soup = bs(content, features="html.parser")
+    second_layer = ""
+    for span in onion_soup.find("td", {"class": "line-content"}).children:
+        second_layer += span.text + "\n"
+
+    second_soup = bs(second_layer, features="html.parser")
+
+    title = second_soup.find("h1", {"class": "css-1o0b1xw"}).text.strip()
+    subtitle = second_soup.find("div", {"class": "css-19lo7rm"}).text.strip()
+    image_addr = second_soup.find("picture", {"class": "css-1oxikel"}).img.attrs["src"]
+
+    Sentence(
+        document_id=document_id,
+        position=1,
+        text=title,
+        translation=translate_text(title, "nl", "en"),
+        format_level=Sentence.FormatLevel.H2,
+    ).save()
+    Sentence(
+        document_id=document_id,
+        position=2,
+        text=subtitle,
+        translation=translate_text(subtitle, "nl", "en"),
+        format_level=Sentence.FormatLevel.P,
+        image=image_addr,
+    ).save()
+
+    position = 3
+    for child in second_soup.find("div", {"class": "article-body-content"}).children:
+        if child.name in ["p", "h2"]:
+            text = child.text.strip().replace("\n", "")
+
+            if text.startswith("Nog niet uitgelezen?"):
+                break
+
+            if child.name == "h2":
+                format_level = Sentence.FormatLevel.H3
+            elif position == 3:
+                format_level = Sentence.FormatLevel.NEW_SECTION
+            else:
+                format_level = Sentence.FormatLevel.P
+
+            Sentence(
+                document_id=document_id,
+                position=position,
+                text=text,
+                translation=translate_text(text, "nl", "en"),
+                format_level=format_level,
+            ).save()
+            position += 1
+
+
+
 PARSING_DISPATCH_TABLE = {
     "tom_poes": parse_tom_poes,
     "kompas": parse_kompas,
     "de_ontdekking_van_hemel": parse_ontdekking,
     "hallo_witte_mensen": hallo_witte_mensen,
+    "natgeo": parse_natgeo,
 }
 
 
