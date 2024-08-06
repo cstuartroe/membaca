@@ -69,8 +69,15 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
     }
 
     performSearch() {
+        const search_string = this.state.search_string
+
         this.props.lemma_search_cache.search(this.state.search_string)
-            .then(results => this.setState({suggestions: results.results, no_lemma_matched: results.no_lemma_matched}));
+            .then(results => {
+                if (this.state.search_string !== search_string) {
+                    return;
+                }
+                this.setState({suggestions: results.results, no_lemma_matched: results.no_lemma_matched})
+            });
     }
 
     componentDidMount() {
