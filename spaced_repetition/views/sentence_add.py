@@ -1,6 +1,6 @@
 import datetime
 from django.views import View
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, JsonResponse
 from django.db import transaction
 from .ajax_utils import logged_in, parse_post
 from spaced_repetition.models.word_in_sentence import WordInSentence
@@ -9,7 +9,8 @@ from spaced_repetition.models.sentence_add import SentenceAdd
 
 
 @transaction.atomic
-def add_sentence(sentence_id: int, user_id: int):
+def add_sentence(sentence_id: int, user_id: int) -> int:
+    """Returns the number of lemmas added."""
     seen_lemma_ids = set()
     for sentence_add in (
         SentenceAdd.objects.filter(user_id=user_id)
@@ -25,6 +26,7 @@ def add_sentence(sentence_id: int, user_id: int):
     creation_time = datetime.datetime.utcnow()
 
     words = WordInSentence.objects.filter(sentence_id=sentence_id)
+    num_lemmas_added = 0
     for word in words:
         if word.lemma is None:
             continue
@@ -38,6 +40,7 @@ def add_sentence(sentence_id: int, user_id: int):
                     time_created=creation_time,
                 )
                 lemma_add.save()
+                num_lemmas_added += 1
         else:
             # just in case the word appears for the first time twice in one sentence
             seen_lemma_ids.add(word.lemma_id)
@@ -49,10 +52,14 @@ def add_sentence(sentence_id: int, user_id: int):
     )
     sadd.save()
 
+    return num_lemmas_added
+
 
 class SentenceAddView(View):
     @logged_in
     @parse_post
     def post(self, request: HttpRequest, post_data):
-        add_sentence(post_data["sentence_id"], request.user.id)
-        return HttpResponse(status=200)
+        num_lemmas_added = add_sentence(post_data["sentence_id"], request.user.id)
+        return JsonResponse({
+            "num_lemmas_added": num_lemmas_added,
+        })

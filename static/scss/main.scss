@@ -329,3 +329,15 @@ $sentence_checkbox_width: 2vh;
     }
   }
 }
+
+.num-lemmas-added {
+  font-family: "Noto Sans", sans-serif;
+  color: $dark_grey;
+  padding: 5px;
+  position: fixed;
+  bottom: 5px;
+  right: 5px;
+  background-color: white;
+  border: $border;
+  z-index: 1;
+}

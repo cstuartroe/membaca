@@ -24,6 +24,7 @@ type Props = {
     language: Language,
     expand_first_unassigned: boolean,
     mark_fully_assigned: () => void,
+    add_lemmas: (n: number) => void,
 }
 
 type AssignedSubstring = {
@@ -87,7 +88,11 @@ export default class DocumentSentence extends Component<Props, State> {
             "/api/sentence_add",
             {sentence_id: this.props.sentence.id},
         )
-            .then(() => this.loadSentence());
+            .then(res => res.json())
+            .then(data => {
+                this.props.add_lemmas(data.num_lemmas_added);
+                this.loadSentence();
+            });
     }
 
     componentDidMount() {

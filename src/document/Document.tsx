@@ -15,6 +15,7 @@ type State = {
     link?: string,
     sentences?: Sentence[],
     sentence_indices_marked_fully_assigned: Set<number>,
+    num_lemmas_added: number,
 }
 
 class _Document extends Component<Props, State> {
@@ -22,6 +23,7 @@ class _Document extends Component<Props, State> {
         super(props);
         this.state = {
             sentence_indices_marked_fully_assigned: new Set<number>(),
+            num_lemmas_added: 0,
         };
     }
 
@@ -77,6 +79,9 @@ class _Document extends Component<Props, State> {
                                         sentence_indices_marked_fully_assigned: this.state.sentence_indices_marked_fully_assigned,
                                     });
                                 }}
+                                add_lemmas={n => this.setState({
+                                    num_lemmas_added: this.state.num_lemmas_added + n,
+                                })}
                             />
                         </div>
                         <div className="col-6 col-md-4">
@@ -86,6 +91,12 @@ class _Document extends Component<Props, State> {
                         </div>
                     </div>
                 ))}
+
+                {this.state.num_lemmas_added > 0 && (
+                    <div className="num-lemmas-added">
+                        +{this.state.num_lemmas_added} lemmas
+                    </div>
+                )}
             </div>
         );
     }
