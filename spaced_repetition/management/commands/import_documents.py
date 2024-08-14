@@ -38,6 +38,7 @@ CHARACTER_REPLACEMENTS = {
     "–": "-",
     "“": "\"",
     "”": "\"",
+    "…": "...",
 }
 
 
@@ -279,11 +280,11 @@ def parse_natgeo(content: str, object_storage_address: str, document_id: int):
     """HTML escaped inside HTML. The goriest thing I've ever seen."""
 
     onion_soup = bs(content, features="html.parser")
-    second_layer = ""
-    for span in onion_soup.find("td", {"class": "line-content"}).children:
-        second_layer += span.text + "\n"
+    # second_layer = ""
+    # for span in onion_soup.find("td", {"class": "line-content"}).children:
+    #     second_layer += span.text + "\n"
 
-    second_soup = bs(second_layer, features="html.parser")
+    second_soup = onion_soup # bs(second_layer, features="html.parser")
 
     title = second_soup.find("h1", {"class": "css-1o0b1xw"}).text.strip()
     subtitle = second_soup.find("div", {"class": "css-19lo7rm"}).text.strip()
@@ -319,6 +320,8 @@ def parse_natgeo(content: str, object_storage_address: str, document_id: int):
                 format_level = Sentence.FormatLevel.NEW_SECTION
             else:
                 format_level = Sentence.FormatLevel.P
+
+            text = sanitize_text(text)
 
             Sentence(
                 document_id=document_id,
