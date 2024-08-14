@@ -8,7 +8,7 @@ from spaced_repetition.models.language import LANGUAGE_IDS
 
 
 def heaps_law(x: int):
-    return 5.1*(x**.63)
+    return 6*(x**.63)
 
 
 @dataclass
