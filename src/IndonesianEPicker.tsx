@@ -76,7 +76,12 @@ class SingleWordPicker extends Component<SingleWordPickerProps, SingleWordPicker
 
         return <div className="row">
             <div className="col-12 indonesian-e-picker">
-                {children}
+                <a
+                    href={`https://en.wiktionary.org/wiki/${current_word}#Indonesian`}
+                    target="_blank"
+                >
+                    {children}
+                </a>
             </div>
         </div>;
     }
