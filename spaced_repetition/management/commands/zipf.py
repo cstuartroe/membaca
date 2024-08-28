@@ -3,10 +3,16 @@ from django.core.management.base import BaseCommand
 from matplotlib import pyplot as plt
 from spaced_repetition.models.language import LANGUAGE_IDS
 from spaced_repetition.models.word_in_sentence import WordInSentence
+from .lemmas_function import HEAPS_K, HEAPS_BETA, heaps_law
 
 
 TOP_WORDS = 20
 COVERAGE_LEVELS = [90, 95, 98, 99]
+
+
+def predicted_corpus_size_for_coverage(coverage_percent: float):
+    percent_of_corpus_that_is_hapax_legomena = 1 - coverage_percent/100
+    return (2*percent_of_corpus_that_is_hapax_legomena/HEAPS_K)**(1/(HEAPS_BETA-1))
 
 
 class Command(BaseCommand):
@@ -70,6 +76,11 @@ class Command(BaseCommand):
             / total_count
         )
         print(f"{100*coverage_without_hapax_legomena:.1f}% coverage without hapax legomena")
+        for percent in COVERAGE_LEVELS:
+            print(
+                f"Predicted number of total lemmas for {percent}% coverage without hapax legomena: "
+                f"{round(heaps_law(predicted_corpus_size_for_coverage(percent)))}"
+            )
 
         print({count: count_counts[count] for count in range(1, 21)})
         print()

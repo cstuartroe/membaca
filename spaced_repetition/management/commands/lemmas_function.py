@@ -7,8 +7,13 @@ from spaced_repetition.models.document import Document
 from spaced_repetition.models.language import LANGUAGE_IDS
 
 
-def heaps_law(x: int):
-    return 6*(x**.63)
+HEAPS_K = 6
+HEAPS_BETA = .63
+
+
+def heaps_law(corpus_size: int):
+    """Predicts the number of unique lemmas in a corpus with a given number of tokens."""
+    return HEAPS_K*(corpus_size**HEAPS_BETA)
 
 
 @dataclass
