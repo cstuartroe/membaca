@@ -71,6 +71,7 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
     performSearch() {
         const search_string = this.state.search_string
 
+        this.setState({suggestions: [], no_lemma_matched: false});
         this.props.lemma_search_cache.search(this.state.search_string)
             .then(results => {
                 if (this.state.search_string !== search_string) {
