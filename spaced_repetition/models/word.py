@@ -19,6 +19,7 @@ class Word(models.Model):
     word = models.CharField(max_length=64)
     language = models.ForeignKey(Language, on_delete=models.PROTECT)
     lemma = models.ForeignKey(Lemma, on_delete=models.CASCADE, null=True)
+    occurrences = models.IntegerField()
 
     class Meta:
         constraints = [

@@ -28,6 +28,7 @@ def create_word_in_sentence(data: dict):
             word=citation_form,
             language_id=language_id,
             lemma_id=lemma_id,
+            occurrences=0,
         )
         word.save()
     elif "lemma_id" in data:
@@ -63,16 +64,21 @@ def create_word_in_sentence(data: dict):
         word_pieces.append(sentence.text[substring.start:substring.end])
 
     word_text = ' '.join(word_pieces)
-    if word_text != citation_form:
-        matching_word = list(Word.objects.filter(word=word_text, lemma_id=lemma_id))
+    matching_word = list(Word.objects.filter(word=word_text, lemma_id=lemma_id))
 
-        if not matching_word:
-            word = Word(
-                word=word_text,
-                language_id=language_id,
-                lemma_id=lemma_id,
-            )
-            word.save()
+    if not matching_word:
+        word = Word(
+            word=word_text,
+            language_id=language_id,
+            lemma_id=lemma_id,
+            occurrences=1,
+        )
+        word.save()
+    else:
+        word = matching_word[0]
+        word.occurrences += 1
+        word.save()
+
 
 
 class WordInSentenceView(View):

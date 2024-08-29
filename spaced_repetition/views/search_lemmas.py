@@ -24,7 +24,7 @@ def get_search_results(language_id: int, search_string: str, num_results: int) -
         (word, levenshtein(search_string, word.word.lower()))
         for word in Word.objects.filter(language_id=language_id)
     ]
-    words_and_edit_distance.sort(key=lambda pair: pair[1])
+    words_and_edit_distance.sort(key=lambda pair: (pair[1], -pair[0].occurrences))
 
     lemma_ids = set()
     results: list[SearchResult] = []
