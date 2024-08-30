@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import {Lemma} from "./models";
 import {safePost} from "./ajax_utils";
+import {SearchResources} from "./document/LemmaAssignmentCard";
+import classNames from "classnames";
 
 type SingleWordPickerProps = {
     lemma: Lemma,
@@ -76,19 +78,18 @@ class SingleWordPicker extends Component<SingleWordPickerProps, SingleWordPicker
 
         return <div className="row">
             <div className="col-12 indonesian-e-picker">
-                <a
-                    href={`https://en.wiktionary.org/wiki/${current_word}#Indonesian`}
-                    target="_blank"
-                >
-                    {children}
-                </a>
+                {children}
             </div>
+            {[SearchResources.Indonesian[0], SearchResources.Indonesian[3]].map(([name, linkF], i) => (
+                <div className={classNames("col-3", "indonesian-e-picker", {"offset-3": i == 0})}>
+                    <a href={linkF(current_word)} target="_blank">{name}</a>
+                </div>
+            ))}
         </div>;
     }
 }
 
-type Props = {
-}
+type Props = {}
 
 type State = {
     lemmas?: Lemma[],

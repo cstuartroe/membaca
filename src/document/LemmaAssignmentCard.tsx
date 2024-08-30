@@ -8,7 +8,7 @@ import {LanguageName, Language, Lemma, WordInSentence, Substring} from "../model
 import LemmaSearchCache, {SearchResult} from "./LemmaSearchCache";
 
 
-const SearchResources: {[key in LanguageName]: [string, ((s: string) => string)][]} = {
+export const SearchResources: {[key in LanguageName]: [string, ((s: string) => string)][]} = {
     "Dutch": [
         ['Wiktionary', woord => `https://en.wiktionary.org/wiki/${woord}#Dutch`],
         ['Mijnwoordenboek', woord => `https://www.mijnwoordenboek.nl/vertaal/NL/EN/${woord}`],
