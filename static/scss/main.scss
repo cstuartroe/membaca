@@ -182,6 +182,10 @@ $sentence_checkbox_width: 2vh;
     }
   }
 
+  &.not_added {
+    background-color: $light_red;
+  }
+
   position: relative;
 
   .lemma-card {

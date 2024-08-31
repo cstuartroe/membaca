@@ -65,6 +65,7 @@ export type WordInSentence = {
   sentence_id: number,
   lemma_id: number | null,
   substrings: Substring[],
+  added: boolean | null,
 }
 
 type GenericTrial = {

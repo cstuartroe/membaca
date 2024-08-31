@@ -112,6 +112,7 @@ export default class DocumentSentence extends Component<Props, State> {
                 sentence_id: this.props.sentence.id,
                 lemma_id: ASSIGNING_LEMMA_ID,
                 substrings: assigning_substrings,
+                added: null,
             });
         }
 
@@ -161,6 +162,7 @@ export default class DocumentSentence extends Component<Props, State> {
                     substrings: [
                         substring,
                     ],
+                    added: null,
                 })
             } else if (state === "skip_characters") {
                 substrings.push({
@@ -287,6 +289,7 @@ export default class DocumentSentence extends Component<Props, State> {
                 const extra_classnames = () => ({
                     sentence_word: true,
                     expanded: substring_expanded,
+                    not_added: words[word_index].added === false,
                 });
 
                 const props = {
