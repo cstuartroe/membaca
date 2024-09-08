@@ -13,11 +13,18 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
+        num_replacements = {}
+
         for document in Document.objects.filter(collection_id=options["collection_id"]):
             for sentence in Sentence.objects.filter(document_id=document.id):
                 for key, value in CHARACTER_REPLACEMENTS.items():
-                    sentence.text = sentence.text.replace(key, value)
+                    if key in sentence.text:
+                        num_replacements[key] = num_replacements.get(key, 0) + sentence.text.count(key)
+                        sentence.text = sentence.text.replace(key, value)
 
                 sentence.text = sentence.text.strip()
 
                 sentence.save()
+
+        for key, value in num_replacements.items():
+            print(f"Replaced {key} {value} times.")
