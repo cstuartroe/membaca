@@ -2,6 +2,7 @@ import argparse
 import html
 import os
 import re
+from dataclasses import dataclass
 
 from bs4 import BeautifulSoup as bs
 from django.core.management.base import BaseCommand
@@ -40,6 +41,7 @@ CHARACTER_REPLACEMENTS = {
     "”": "\"",
     "′": "'",
     "ĳ": "ij",
+    "­": "",
 }
 
 
@@ -334,6 +336,72 @@ def parse_natgeo(content: str, object_storage_address: str, document_id: int):
             position += 1
 
 
+@dataclass
+class Paragraph:
+    text: str
+    new_section: bool
+
+
+@dataclass
+class Chapter:
+    title: str
+    paragraphs: list[Paragraph]
+
+
+def parse_natuuramnesie(content: str, object_storage_address: str):
+    collection = Collection(
+        title="Natuuramnesie",
+        language_id=LANGUAGE_IDS["Dutch"],
+    )
+    collection.save()
+
+    matches = re.findall("<html.*?</html>", content, flags=re.DOTALL)
+    chapters = []
+    current_chapter = None
+    for match in list(matches)[2:]:
+        soup = bs(match, features="html.parser")
+        for p in soup.find_all("p"):
+            if len(p["class"]) != 1:
+                raise ValueError
+            pclass = p["class"][0]
+
+            if pclass in ['Title0_Part', 'Title0_PartSub', 'Title1_Header_ALT_NP', 'Title1_Header_ALT_NP_Odd', 'Title2_zw']:
+                pass
+            elif pclass in ['Title1_SubHeader', 'Title1_SubHeader_2lines']:
+                current_chapter = Chapter(
+                    title=p.text,
+                    paragraphs=[],
+                )
+                chapters.append(current_chapter)
+            elif pclass == 'Body_W':
+                current_chapter.paragraphs.append(Paragraph(p.text, True))
+            elif pclass in ['Body', 'Body_no_ind']:
+                current_chapter.paragraphs.append(Paragraph(p.text, False))
+            elif pclass in ['Note_1x_W', 'Note_2x_W']:
+                current_chapter.paragraphs.append(Paragraph(f'"{p.text}"', False))
+            else:
+                raise ValueError
+
+    for i, chapter in enumerate(chapters):
+        d = Document(
+            title=chapter.title,
+            collection=collection,
+            order=i,
+            link="https://www.onlinebibliotheek.nl/catalogus/437016935/natuuramnesie-m-argeloo",
+        )
+        d.save()
+
+        for j, p in enumerate(chapter.paragraphs):
+            s = Sentence(
+                document=d,
+                position=j,
+                text=sanitize_text(p.text),
+                translation="",
+                image="",
+                format_level=Sentence.FormatLevel.NEW_SECTION if p.new_section else Sentence.FormatLevel.P,
+            )
+            s.save()
+
 
 PARSING_DISPATCH_TABLE = {
     "tom_poes": parse_tom_poes,
@@ -341,6 +409,7 @@ PARSING_DISPATCH_TABLE = {
     "de_ontdekking_van_hemel": parse_ontdekking,
     "hallo_witte_mensen": hallo_witte_mensen,
     "natgeo": parse_natgeo,
+    "natuuramnesie": parse_natuuramnesie,
 }
 
 
