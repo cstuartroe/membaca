@@ -19,6 +19,23 @@ const metadataFields: {[language_id: number]: string[]} = {
     [DutchLanguageId]: ["gender"],
 }
 
+type CEFRLevel = {
+    name: string,
+    lemmas: number,
+}
+
+const _cl = (name: string, lemmas: number) => ({name, lemmas});
+
+const CEFRLevels: CEFRLevel[] = [
+    _cl("A0", 250),
+    _cl("A1", 750),
+    _cl("A2", 1500),
+    _cl("B1", 3000),
+    _cl("B2", 6000),
+    _cl("C1", 10000),
+    _cl("C2", 12000),
+]
+
 type ModalType = "details" | "history" | "share" | "reading_history" | "gender_details" | "gender_history";
 
 type History = {
@@ -459,11 +476,16 @@ export default class Dashboard extends Component<Props, State> {
         const seen_cards = card_descriptors.filter(card => card.last_trial !== null);
         const now = new Date();
         const due_cards = seen_cards.filter(card => card.due_date < now);
+        const maintenance_cards = seen_cards.filter(card => (
+            (card.last_trial!.easiness >= 6) && (card.due_date > now)
+        ));
         const continue_reading_document_histories = reading_history.document_histories.filter(d => (
             d.sentences_read < d.total_sentences
         )).slice(0, 3)
         const total_words_read = reading_history.words_read_by_day.reduce((n, d) => n + d.words, 0);
         const total_lemmas = reading_history.words_read_by_day.reduce((n, d) => n + d.new_lemmas, 0);
+
+        const goal_cefr_level = CEFRLevels.find(l => l.lemmas > maintenance_cards.length) || CEFRLevels[CEFRLevels.length - 1];
 
         return (
             <div className="col-12 col-md-6 offset-md-3">
@@ -472,6 +494,11 @@ export default class Dashboard extends Component<Props, State> {
                         <p>
                             Learning {seen_cards.length}/{card_descriptors.length} added words.
                             {' '}{due_cards.length} cards ready for review.
+                        </p>
+                        <p>
+                            {maintenance_cards.length} cards in long-term memory (≥ 90 day review interval and not currently due).{' '}
+                            This puts you at {Math.round(100*maintenance_cards.length/goal_cefr_level.lemmas)}% of
+                            the way to {goal_cefr_level.name}!
                         </p>
                     </div>
                     {(due_cards.length > 0) ? (
