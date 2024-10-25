@@ -373,7 +373,7 @@ export default class Dashboard extends Component<Props, State> {
                                 <p>{day.new_lemmas}</p>
                             </div>
                             <div className="col-2">
-                                <p>{Math.round(100 * day.new_lemmas / day.words)}%</p>
+                                <p>{Math.round(1000 * day.new_lemmas / day.words)/10}%</p>
                             </div>
                             <div className="col-2">
                                 <p>{day.added_lemmas}</p>
