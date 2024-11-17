@@ -40,7 +40,7 @@ input, textarea, p, .document-sentence, .document-translation {
 $document_font_size: 1.75vh;
 $lemma_card_top_padding: .5vh;
 
-.format-level-p, .format-level-ns, .label {
+.format-level-p, .format-level-ns, .format-level-in, .label {
   font-size: $document_font_size;
 
   .lemma-card {
@@ -52,6 +52,10 @@ $lemma_card_top_padding: .5vh;
   padding-top: 2vh;
   margin-top: 2vh;
   border-top: $border;
+}
+
+.format-level-in {
+  padding-left: 8vh;
 }
 
 $h1_size: 3.5vh;

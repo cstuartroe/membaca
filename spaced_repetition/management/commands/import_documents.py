@@ -403,6 +403,53 @@ def parse_natuuramnesie(content: str, object_storage_address: str):
             s.save()
 
 
+hart_van_inkt_p_classes = {
+    "wp-blok": Sentence.FormatLevel.INDENTED,
+    "wp-blokmetwit": Sentence.FormatLevel.INDENTED,
+    "wp-platmetwit": Sentence.FormatLevel.NEW_SECTION,
+    "wp-z": Sentence.FormatLevel.NEW_SECTION,
+    "wp-plat": Sentence.FormatLevel.P,
+}
+
+
+def parse_hart_van_inkt(content: str, object_storage_address: str):
+    collection = Collection(
+        title="Hart van Inkt",
+        language_id=LANGUAGE_IDS["Dutch"],
+    )
+    collection.save()
+
+    matches = re.findall("<html.*?</html>", content, flags=re.DOTALL)
+    for i, match in enumerate(list(matches)[5:-1]):
+        soup = bs(match, features="html.parser")
+        main_div = soup.body.div
+
+        d = Document(
+            title=sanitize_text(main_div.h1.text),
+            collection=collection,
+            order = i + 1,
+            link = "https://www.onlinebibliotheek.nl/catalogus/394659732/hart-van-inkt-cornelia-funke",
+        )
+        d.save()
+
+        for j, p in enumerate(list(main_div.find_all("p"))):
+            text = sanitize_text(p.text)
+            img = ""
+            if p.img:
+                img = "https://membaca.s3.us-east-1.amazonaws.com/hart_van_inkt_images/" + p.img.attrs["src"].split("/")[-1]
+            elif text == "":
+                continue
+            s = Sentence(
+                document=d,
+                position=j + 1,
+                text=text,
+                translation="",
+                image=img,
+                format_level=hart_van_inkt_p_classes[p.attrs["class"][0]],
+            )
+            s.save()
+
+
 PARSING_DISPATCH_TABLE = {
     "tom_poes": parse_tom_poes,
     "kompas": parse_kompas,
@@ -410,6 +457,7 @@ PARSING_DISPATCH_TABLE = {
     "hallo_witte_mensen": hallo_witte_mensen,
     "natgeo": parse_natgeo,
     "natuuramnesie": parse_natuuramnesie,
+    "hart_van_inkt": parse_hart_van_inkt,
 }
 
 

@@ -17,6 +17,7 @@ class Sentence(models.Model):
         H3 = "h3", _("h3")
         P = "p", _("p")
         NEW_SECTION = "ns", _("new section")
+        INDENTED = "in", _("indented")
 
     format_level = models.CharField(
         max_length=2,
