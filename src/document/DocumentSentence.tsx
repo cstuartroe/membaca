@@ -12,12 +12,13 @@ import LemmaSearchCache from "./LemmaSearchCache";
 
 const FAKE_WORD_ID = -1;
 const ASSIGNING_LEMMA_ID = -2;
+const PENDING_LEMMA_ID = -3;
 const SKIP_CHARACTERS: string[] = [
     " ", "\n", ".", ",", "!", "?", "\"", "'", ";", "-", "(", ")", "/", ":", "*", "&", "#", "%", "[", "]", "<", ">",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     "«", "»",
 ];
-
+const preemptionMessage = "Preempted by newer load";
 
 type Props = {
     sentence: Sentence,
@@ -47,6 +48,12 @@ type State = {
     // if the assigning word is expanded, this is a number representing the index of which substring to expand.
     // otherwise it is undefined.
     expanded_assigning_substring_index: number | undefined,
+
+    // whether fetched_words contains faked words from marking words as successfully assigned without
+    // waiting on server response
+    contains_pending: boolean,
+
+    current_load_controller?: AbortController,
 }
 
 export default class DocumentSentence extends Component<Props, State> {
@@ -58,11 +65,19 @@ export default class DocumentSentence extends Component<Props, State> {
             expanded_word_index: undefined,
             expanded_assigning_substring_index: undefined,
             lemma_search_cache: new LemmaSearchCache(props.language.id),
+            contains_pending: false,
         };
     }
 
     loadSentence() {
-        fetch(`/api/sentence/${this.props.sentence.id}`)
+        this.state.current_load_controller?.abort(preemptionMessage);
+
+        const controller = new AbortController();
+        this.setState({
+            current_load_controller: controller,
+        })
+
+        fetch(`/api/sentence/${this.props.sentence.id}`, {method: "GET", signal: controller.signal})
             .then(res => res.json())
             .then(data => {
                 this.setState(
@@ -72,6 +87,7 @@ export default class DocumentSentence extends Component<Props, State> {
                         assigning_substrings: [],
                         expanded_word_index: undefined,
                         expanded_assigning_substring_index: undefined,
+                        contains_pending: false,
                     },
                     () => {
                         const [_, any_unassigned] = this.substringElements();
@@ -80,6 +96,13 @@ export default class DocumentSentence extends Component<Props, State> {
                         }
                     }
                 )
+            })
+            .catch(r => {
+                if (r === preemptionMessage) {
+                    console.log(r);
+                } else {
+                    throw r;
+                }
             })
     }
 
@@ -312,6 +335,26 @@ export default class DocumentSentence extends Component<Props, State> {
                                     search_string={search_string}
                                     language={language}
                                     loadSentence={() => this.loadSentence()}
+                                    markAssigned={() => {
+                                        const fetched_words = [...this.state.fetched_words || []];
+                                        fetched_words.push({
+                                            id: FAKE_WORD_ID,
+                                            sentence_id: 0,
+                                            lemma_id: PENDING_LEMMA_ID,
+                                            substrings: words[word_index].substrings,
+                                            added: null,
+                                        });
+
+                                        this.setState({
+                                            fetched_words,
+                                            assigning_substrings: [],
+                                            expanded_word_index: undefined,
+                                            expanded_assigning_substring_index: undefined,
+                                            contains_pending: true,
+                                        })
+
+                                        this.state.current_load_controller?.abort(preemptionMessage);
+                                    }}
                                     word_in_sentence={words[word_index]}
                                     close={close}
                                     lemma_search_cache={this.state.lemma_search_cache}
@@ -342,6 +385,35 @@ export default class DocumentSentence extends Component<Props, State> {
                     );
                 };
 
+                 const getWordAndAssignedCard = (baseClassName: string) => {
+                     const className = classNames(baseClassName, extra_classnames());
+
+                     if (actually_expand()) {
+                         return (
+                             <span className={className} key={i} {...props}>
+                                    <a
+                                        href={`/admin/spaced_repetition/wordinsentence/${words[word_index].id}/change/`}
+                                        target="_blank"
+                                    >
+                                        {substring_text}
+                                    </a>
+                                 {actually_expand() && (
+                                     <LemmaDisplayCard
+                                         word_in_sentence={words[word_index]}
+                                         close={close}
+                                         loadSentence={() => this.loadSentence()}/>
+                                 )}
+                                </span>
+                         );
+                     } else {
+                         return (
+                             <span className={className} key={i} {...props}>
+                                 {substring_text}
+                             </span>
+                         );
+                     }
+                 }
+
                 switch (words[word_index].lemma_id) {
                     case UNASSIGNED_LEMMA_ID:
                         return getWordAndAssignmentCard('unassigned_word')
@@ -349,33 +421,11 @@ export default class DocumentSentence extends Component<Props, State> {
                     case ASSIGNING_LEMMA_ID:
                         return getWordAndAssignmentCard('assigning_word');
 
-                    default:
-                        const className = classNames('assigned_word', extra_classnames());
+                    case PENDING_LEMMA_ID:
+                        return getWordAndAssignedCard('pending_word');
 
-                        if (actually_expand()) {
-                            return (
-                                <span className={className} key={i} {...props}>
-                                    <a
-                                        href={`/admin/spaced_repetition/wordinsentence/${words[word_index].id}/change/`}
-                                        target="_blank"
-                                    >
-                                        {substring_text}
-                                    </a>
-                                    {actually_expand() && (
-                                        <LemmaDisplayCard
-                                            word_in_sentence={words[word_index]}
-                                            close={close}
-                                            loadSentence={() => this.loadSentence()}/>
-                                    )}
-                                </span>
-                            );
-                        } else {
-                            return (
-                                <span className={className} key={i} {...props}>
-                                    {substring_text}
-                                </span>
-                            );
-                        }
+                    default:
+                        return getWordAndAssignedCard('assigned_word');
                 }
             }
         });
@@ -409,7 +459,7 @@ export default class DocumentSentence extends Component<Props, State> {
         const [substring_elements, any_unassigned] = this.substringElements();
 
         return <div className={`document-sentence format-level-${this.props.sentence.format_level}`}>
-            {this.checkBox(!any_unassigned)}
+            {this.checkBox(!any_unassigned && !this.state.contains_pending)}
             {substring_elements}
         </div>;
     }

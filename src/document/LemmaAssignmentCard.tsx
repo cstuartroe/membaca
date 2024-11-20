@@ -43,6 +43,7 @@ type Props = {
     language: Language,
     word_in_sentence: WordInSentence,
     loadSentence: () => void,
+    markAssigned: () => void,
     close: () => void,
     lemma_search_cache: LemmaSearchCache,
     assigning_substring: Substring,
@@ -124,7 +125,8 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
                 this.props.lemma_search_cache.clear(this.state.search_string);
                 this.props.loadSentence();
             }
-        })
+        });
+        this.props.markAssigned();
     }
 
     render() {

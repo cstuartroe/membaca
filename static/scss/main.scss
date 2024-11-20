@@ -3,6 +3,7 @@ $dark_grey: #444444;
 $light_grey: #ddd;
 $light_green: #ddffdd;
 $light_yellow: #ffffaa;
+$light_orange: #ffeedd;
 $light_red: #ffaaaa;
 
 $bootstrap_padding: 15px;
@@ -188,6 +189,10 @@ $sentence_checkbox_width: 2vh;
 
   &.not_added {
     background-color: $light_red;
+  }
+
+  &.pending_word {
+    background-color: $light_orange;
   }
 
   position: relative;
