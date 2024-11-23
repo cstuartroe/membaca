@@ -23,5 +23,8 @@ class Command(BaseCommand):
 
         sentences = list(Sentence.objects.filter(document_id=options["document_id"]))
         for sentence in tqdm(sentences):
+            if sentence.text.strip() == "":
+                continue
+
             sentence.translation = translate_text(sentence.text, language_code, "en")
             sentence.save()
