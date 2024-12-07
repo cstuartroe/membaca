@@ -21,8 +21,15 @@ admin.site.register(LemmaAdd)
 admin.site.register(MetadataTrial)
 admin.site.register(Sentence)
 admin.site.register(SentenceAdd)
-admin.site.register(Trial)
 admin.site.register(UserSettings)
 admin.site.register(WordInSentence)
 admin.site.register(Substring)
 admin.site.register(Word)
+
+
+class TrialAdmin(admin.ModelAdmin):
+    # exclude foreign keys because they take too long to load
+    exclude = ["lemma_add", "sentence"]
+
+
+admin.site.register(Trial, TrialAdmin)
