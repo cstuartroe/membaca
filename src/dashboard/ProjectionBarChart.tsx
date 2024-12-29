@@ -19,7 +19,7 @@ export default function ProjectionBarChart(props: {card_descriptors: CommonCardD
     const {card_descriptors} = props;
 
     const today = getUTCToday();
-    const lookahead = 30;
+    const lookahead = 100;
     const days = Array.from(Array(lookahead).keys()).map(n => addDays(today, n + 1));
 
     const labels = days.map(d => `${d.getUTCMonth() + 1}-${d.getUTCDate()}`)
