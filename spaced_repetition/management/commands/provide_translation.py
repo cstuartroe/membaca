@@ -7,6 +7,7 @@ from spaced_repetition.models.sentence import Sentence
 
 LANGUAGE_CODES = {
     "Dutch": "nl",
+    "Esperanto": "eo",
 }
 
 
