@@ -23,6 +23,7 @@ export const SearchResources: {[key in LanguageName]: [string, ((s: string) => s
     ],
     "Esperanto": [
         ['Wiktionary', vorto => `https://en.wiktionary.org/wiki/${vorto}#Esperanto`],
+        ['Google Translate', vorto => `https://translate.google.com/?sl=eo&tl=en&text=${vorto}&op=translate`]
     ],
     "Greek": [
         ['Wiktionary', λέξη => `https://en.wiktionary.org/wiki/${λέξη}#Greek`],
