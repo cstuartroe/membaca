@@ -354,3 +354,10 @@ $sentence_checkbox_width: 2vh;
   border: $border;
   z-index: 1;
 }
+
+.lowercaser {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  cursor: pointer;
+}

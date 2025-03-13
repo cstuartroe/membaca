@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import classNames from "classnames";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faArrowLeft, faArrowRight} from "@fortawesome/free-solid-svg-icons";
+import {faArrowLeft, faArrowRight, faArrowDown} from "@fortawesome/free-solid-svg-icons";
 
 import {safePost} from "../ajax_utils";
 import {LanguageName, Language, Lemma, WordInSentence, Substring} from "../models";
@@ -149,20 +149,26 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
                         </a>
                     ))}
                     <div className="label">Citation form</div>
-                    <div>
-                        <input
-                            type="text"
-                            value={new_lemma.citation_form}
-                            onChange={e => this.setState({
-                                new_lemma: {...new_lemma, citation_form: e.target.value},
-                            })}/>
+                    <div style={{position: "relative"}}>
+                      <input
+                        type="text"
+                        value={new_lemma.citation_form}
+                        onChange={e => this.setState({
+                          new_lemma: {...new_lemma, citation_form: e.target.value},
+                        })}/>
+
+                      <div className="lowercaser" onClick={() => this.setState({
+                        new_lemma: {...new_lemma, citation_form: new_lemma?.citation_form.toLowerCase()},
+                      })}>
+                        <FontAwesomeIcon icon={faArrowDown}/>
+                      </div>
                     </div>
                     <div className="label">Translation</div>
                     <div>
                         <textarea
-                            value={new_lemma.translation}
-                            style={{height: "10vh"}}
-                            onChange={e => this.setState({
+                          value={new_lemma.translation}
+                          style={{height: "10vh"}}
+                          onChange={e => this.setState({
                                 new_lemma: {...new_lemma, translation: e.target.value},
                             })}/>
                     </div>
@@ -250,13 +256,18 @@ export default class LemmaAssignmentCard extends Component<Props, State> {
                     No lemma
                 </div>
 
-                <div>
+                <div style={{position: "relative"}}>
                     <input
                         type="text"
                         value={this.state.search_string}
                         onChange={e => this.setState({
                             search_string: e.target.value,
                         })}/>
+                    <div className="lowercaser" onClick={() => this.setState({
+                      search_string: this.state.search_string.toLowerCase(),
+                    })}>
+                      <FontAwesomeIcon icon={faArrowDown}/>
+                    </div>
                 </div>
                 {this.state.suggestions.map((result, i) => {
                     const data = {lemma_id: result.lemma.id};
