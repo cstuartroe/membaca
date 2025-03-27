@@ -42,6 +42,7 @@ CHARACTER_REPLACEMENTS = {
     "′": "'",
     "ĳ": "ij",
     "­": "",
+    "—": "-",
 }
 
 
